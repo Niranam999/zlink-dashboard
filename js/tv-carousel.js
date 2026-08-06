@@ -21,11 +21,11 @@ function initCarousel() {
   const frameDaily = document.getElementById('frameDailyReport');
   const frameZLink = document.getElementById('frameZLink');
 
-  // Load Daily Report & Z-Link Dashboard into iframes
-  if (frameDaily && (!frameDaily.src || frameDaily.src === 'about:blank')) {
+  if (frameDaily) {
+    frameDaily.removeAttribute('srcdoc');
     frameDaily.src = CONFIG.DAILY_REPORT_URL;
   }
-  if (frameZLink && (!frameZLink.src || frameZLink.src === 'about:blank')) {
+  if (frameZLink) {
     frameZLink.src = 'index.html';
   }
 
@@ -72,15 +72,12 @@ function switchFrame(index) {
 
   if (index === 0) {
     if (frameDaily) {
-      // Reload iframe content to ensure fresh realtime state & release TV memory
-      frameDaily.src = CONFIG.DAILY_REPORT_URL;
+      frameDaily.removeAttribute('srcdoc');
       frameDaily.classList.add('active');
     }
     if (frameZLink) frameZLink.classList.remove('active');
   } else {
     if (frameZLink) {
-      // Reload iframe content to ensure fresh realtime state & release TV memory
-      frameZLink.src = 'index.html';
       frameZLink.classList.add('active');
     }
     if (frameDaily) frameDaily.classList.remove('active');
