@@ -6,7 +6,7 @@
 const CONFIG = {
   DAILY_REPORT_DURATION: 180, // seconds
   ZLINK_DURATION: 60,         // seconds
-  DAILY_REPORT_URL: 'index.html#daily-report-view' // Fallback / placeholder for Daily Report URL
+  DAILY_REPORT_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/dashboard.html'
 };
 
 let currentFrameIndex = 0; // 0 = Daily Report, 1 = Z-Link Dashboard
@@ -21,8 +21,11 @@ function initCarousel() {
   const frameDaily = document.getElementById('frameDailyReport');
   const frameZLink = document.getElementById('frameZLink');
 
-  // Load Z-Link Dashboard into iframe 2
-  if (frameZLink) {
+  // Load Daily Report & Z-Link Dashboard into iframes
+  if (frameDaily && (!frameDaily.src || frameDaily.src === 'about:blank')) {
+    frameDaily.src = CONFIG.DAILY_REPORT_URL;
+  }
+  if (frameZLink && (!frameZLink.src || frameZLink.src === 'about:blank')) {
     frameZLink.src = 'index.html';
   }
 
@@ -68,10 +71,18 @@ function switchFrame(index) {
   const frameZLink = document.getElementById('frameZLink');
 
   if (index === 0) {
-    if (frameDaily) frameDaily.classList.add('active');
+    if (frameDaily) {
+      // Reload iframe content to ensure fresh realtime state & release TV memory
+      frameDaily.src = CONFIG.DAILY_REPORT_URL;
+      frameDaily.classList.add('active');
+    }
     if (frameZLink) frameZLink.classList.remove('active');
   } else {
-    if (frameZLink) frameZLink.classList.add('active');
+    if (frameZLink) {
+      // Reload iframe content to ensure fresh realtime state & release TV memory
+      frameZLink.src = 'index.html';
+      frameZLink.classList.add('active');
+    }
     if (frameDaily) frameDaily.classList.remove('active');
   }
 }
