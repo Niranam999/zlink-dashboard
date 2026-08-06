@@ -2,10 +2,9 @@
    Z-LINK KANBAN REALTIME DASHBOARD - TV CAROUSEL CONTROLLER (tv-carousel.html)
    ========================================================================== */
 
-// Default Configuration: Daily Report view duration (180s), Z-Link view duration (60s)
 const CONFIG = {
-  DAILY_REPORT_DURATION: 180, // seconds
-  ZLINK_DURATION: 60,         // seconds
+  DAILY_REPORT_DURATION: 180, // seconds (3 minutes)
+  ZLINK_DURATION: 60,         // seconds (1 minute)
   DAILY_REPORT_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/dashboard.html'
 };
 
@@ -23,10 +22,15 @@ function initCarousel() {
 
   if (frameDaily) {
     frameDaily.removeAttribute('srcdoc');
-    frameDaily.src = CONFIG.DAILY_REPORT_URL;
+    if (!frameDaily.getAttribute('src')) {
+      frameDaily.src = CONFIG.DAILY_REPORT_URL;
+    }
   }
+
   if (frameZLink) {
-    frameZLink.src = 'index.html';
+    if (!frameZLink.getAttribute('src')) {
+      frameZLink.src = 'index.html';
+    }
   }
 
   // Start with Frame 0 (Daily Report)
@@ -41,7 +45,7 @@ function tick() {
   secondsRemaining--;
 
   const totalDuration = (currentFrameIndex === 0) ? CONFIG.DAILY_REPORT_DURATION : CONFIG.ZLINK_DURATION;
-  const progressPercent = ((totalDuration - secondsRemaining) / totalDuration) * 100;
+  const progressPercent = Math.min(100, Math.max(0, ((totalDuration - secondsRemaining) / totalDuration) * 100));
 
   // Update top progress bar
   const progressBar = document.getElementById('carouselProgress');
@@ -74,12 +78,20 @@ function switchFrame(index) {
     if (frameDaily) {
       frameDaily.removeAttribute('srcdoc');
       frameDaily.classList.add('active');
+      frameDaily.style.display = 'block';
     }
-    if (frameZLink) frameZLink.classList.remove('active');
+    if (frameZLink) {
+      frameZLink.classList.remove('active');
+      frameZLink.style.display = 'none';
+    }
   } else {
     if (frameZLink) {
       frameZLink.classList.add('active');
+      frameZLink.style.display = 'block';
     }
-    if (frameDaily) frameDaily.classList.remove('active');
+    if (frameDaily) {
+      frameDaily.classList.remove('active');
+      frameDaily.style.display = 'none';
+    }
   }
 }
