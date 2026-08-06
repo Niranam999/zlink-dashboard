@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z-LINK Assembly Realtime Dashboard | Aveam</title>
+  <!-- Google Fonts & Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- DASHBOARD HEADER BAR -->
+  <header class="dashboard-header">
+    <div class="brand-section">
+      <div class="brand-logo-badge">AVEAM</div>
+      <div class="title-group">
+        <h1>Z-LINK ASSEMBLY REALTIME DASHBOARD</h1>
+        <p>ระบบติดตามสถานะการประกอบ Z-Link แบบเรียลไทม์ (Kanban 10 Cards)</p>
+      </div>
+    </div>
+
+    <!-- KPI BADGES -->
+    <div class="kpi-container">
+      <div class="kpi-card">
+        <div class="kpi-icon fg">📦</div>
+        <div class="kpi-info">
+          <span class="kpi-label">FG Shelf Ready</span>
+          <span class="kpi-value" id="kpiFGCount">0 / 10</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon wip">⚙️</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Active WIP</span>
+          <span class="kpi-value" id="kpiWIPCount">0 / 2</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon shipped">🚚</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Monthly Shipped</span>
+          <span class="kpi-value" id="kpiShippedCount">4 กล่อง</span>
+        </div>
+      </div>
+
+      <!-- TOTAL SHIPPED 2026 BADGE -->
+      <div class="kpi-card total-shipped-badge">
+        <div class="kpi-icon shipped" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">📊</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total shipped : 2026</span>
+          <span class="kpi-value" id="kpiYearlyShippedCount">24 กล่อง</span>
+        </div>
+      </div>
+
+      <!-- LIVE CLOCK, PRINT BUTTON & ADMIN OVERRIDE BUTTON -->
+      <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <button id="btnOpenAdminModal" style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; padding: 0.55rem 0.95rem; border-radius: 10px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; transition: all 0.2s ease;">
+          ⚙️ Admin Override
+        </button>
+        <a href="print-qr.html" target="_blank" style="background: rgba(236, 72, 153, 0.2); border: 1px solid rgba(236, 72, 153, 0.5); color: #f472b6; padding: 0.55rem 0.95rem; border-radius: 10px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s ease;">
+          🖨️ พิมพ์ป้าย QR
+        </a>
+        <div class="live-clock-box">
+          <div class="live-time" id="liveTime">00:00:00</div>
+          <div class="live-date" id="liveDate">กำลังโหลด...</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="kanban-board-wrapper">
+
+    <!-- TOP INFO ROW (4 METRIC BOXES FROM MOCKUP) -->
+    <section class="top-info-row">
+      
+      <!-- BOX 1: SHIPMENT RECORD 2026 CHART -->
+      <div class="info-card info-card-shipment">
+        <div class="info-card-header">
+          <span class="info-card-title">Shipment Record : 2026</span>
+        </div>
+        <div class="chart-wrapper">
+          <!-- Y-Axis Labels (0, 10, 25 Boxes) -->
+          <div class="chart-y-axis" id="shipmentYAxis">
+            <span>25</span>
+            <span>10</span>
+            <span>0</span>
+          </div>
+          <div class="chart-container" id="shipmentChartContainer">
+            <!-- Dynamic SVG injected by app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- BOX 2: OPERATOR RUN TODAY -->
+      <div class="info-card info-card-operator">
+        <div class="info-card-header">
+          <span class="info-card-title">Operator run today</span>
+        </div>
+        <div class="operator-display">
+          <span class="operator-number" id="operatorCount">2</span>
+          <span class="operator-unit">Person</span>
+        </div>
+        <div class="info-card-subtext">(File 5: Sub-Lead + Member)</div>
+      </div>
+
+      <!-- BOX 3: PROJECT STATUS -->
+      <div class="info-card info-card-status" id="projectStatusCard">
+        <div class="info-card-header">
+          <span class="info-card-title">Project Status</span>
+        </div>
+        <div class="status-display">
+          <span class="status-state-text" id="projectStatusText">RUNNING</span>
+        </div>
+        <div class="status-detail-text">
+          Detail: <span id="projectStatusDetail">No issue</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- KANBAN BOARD GRID (5 COLUMNS) -->
+    <div class="kanban-grid">
+      
+      <!-- COLUMN 1: JOB BOARD -->
+      <section class="kanban-column column-job-board">
+        <div class="column-header">
+          <div class="column-title">
+            <span>📋</span>
+            <span>Job Board (รอประกอบ)</span>
+          </div>
+          <span class="column-badge" id="badgeJobBoard">0</span>
+        </div>
+        <div class="cards-container" id="colJobBoard">
+          <!-- Cards injected dynamically -->
+        </div>
+      </section>
+
+      <!-- COLUMN 2: WIP ASSEMBLY -->
+      <section class="kanban-column column-wip">
+        <div class="column-header">
+          <div class="column-title">
+            <span>⚙️</span>
+            <span>WIP Assembly (กำลังประกอบ)</span>
+          </div>
+          <span class="column-badge" id="badgeWIP">0/2</span>
+        </div>
+        <div class="cards-container" id="colWIP">
+          <!-- Cards injected dynamically -->
+        </div>
+      </section>
+
+      <!-- COLUMN 3: QA & PACKING -->
+      <section class="kanban-column column-qa">
+        <div class="column-header">
+          <div class="column-title">
+            <span>🔍</span>
+            <span>QA & Packing (ตรวจเช็ค QA)</span>
+          </div>
+          <span class="column-badge" id="badgeQA">0</span>
+        </div>
+        <div class="cards-container" id="colQA">
+          <!-- Cards injected dynamically -->
+        </div>
+      </section>
+
+      <!-- COLUMN 4: FG SHELF (10 SLOTS GRID) -->
+      <section class="kanban-column column-fg">
+        <div class="column-header">
+          <div class="column-title">
+            <span>📦</span>
+            <span>FG Shelf (ชั้นวางสินค้า 10 ช่อง)</span>
+          </div>
+          <span class="column-badge" id="badgeFG">0/10</span>
+        </div>
+        <div class="cards-container" id="colFGShelf">
+          <!-- 10 Slots Grid injected dynamically -->
+        </div>
+      </section>
+
+      <!-- COLUMN 5: SHIPPED -->
+      <section class="kanban-column column-shipped">
+        <div class="column-header">
+          <div class="column-title">
+            <span>🚚</span>
+            <span>Shipped (จัดส่งแล้ว)</span>
+          </div>
+          <span class="column-badge" id="badgeShipped">0</span>
+        </div>
+        <div class="cards-container" id="colShipped">
+          <!-- Feed & Monthly Total injected dynamically -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ADMIN OVERRIDE MODAL -->
+  <div class="modal-overlay" id="adminModalOverlay" style="display: none;">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <span>⚙️</span>
+          <span>Z-LINK Admin Override Control Panel</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseAdminModal">&times;</button>
+      </div>
+
+      <!-- TAB NAVIGATION -->
+      <div class="admin-tabs-nav">
+        <button class="admin-tab-btn active" id="tabBtnAction">⚙️ ดำเนินการแก้ไข (Action Form)</button>
+        <button class="admin-tab-btn" id="tabBtnAudit">📋 ประวัติการแก้ไข (Audit Log)</button>
+        <button class="admin-tab-btn" id="tabBtnCycle">⏱️ ระยะเวลาประกอบ (Cycle Time)</button>
+      </div>
+
+      <!-- TAB 1: ACTION FORM -->
+      <div class="admin-tab-content active" id="tabContentAction">
+        <div id="adminAlertBox" class="admin-alert-box"></div>
+        
+        <form id="adminOverrideForm">
+          <div class="admin-form-grid">
+            
+            <!-- USER SELECTION -->
+            <div class="admin-form-group">
+              <label for="adminUserSelect">👤 ผู้ทำรายการ (Authorized User)</label>
+              <select id="adminUserSelect" class="admin-select" required>
+                <option value="Wattana">Wattana (คุณเอ - Project Manager)</option>
+                <option value="Wanlop">Wanlop (คุณวัลลภ - Supervisor)</option>
+              </select>
+            </div>
+
+            <!-- EMPLOYEE ID PIN -->
+            <div class="admin-form-group">
+              <label for="adminUserPin">🔑 รหัสพนักงาน / PIN</label>
+              <input type="password" id="adminUserPin" class="admin-input" placeholder="กรอกรหัสพนักงาน" required>
+            </div>
+
+            <!-- ACTION TYPE -->
+            <div class="admin-form-group full-width">
+              <label for="adminActionType">🛠️ ประเภทการดำเนินงาน (Action Type)</label>
+              <select id="adminActionType" class="admin-select" required>
+                <option value="MOVE_CARD">🎴 ย้ายสถานะการ์ด (Move Card Status)</option>
+                <option value="ADJUST_SHIPPED">📦 ปรับแก้ตัวเลขจัดส่งเดือนปัจจุบัน (Adjust Current Month Shipped)</option>
+                <option value="UPDATE_MONTHLY_HIST">📊 ปรับยอดจัดส่งรายเดือนย้อนหลัง (Monthly Baseline Edit)</option>
+                <option value="UPDATE_STATUS">🔴 ปรับสถานะโครงการ (Project Status)</option>
+                <option value="RESET_AUG_BASELINE">🧹 รีเซ็ตสถานะเริ่มต้นสิงหาคม 2026 (Reset Aug Baseline)</option>
+                <option value="RESET_BOARD">🔄 รีเซ็ตกระดานทั้งหมด (Reset Dashboard)</option>
+              </select>
+            </div>
+
+            <!-- DYNAMIC SUBFIELDS: MOVE CARD -->
+            <div class="admin-form-group subfield-move" id="subfieldMoveCard">
+              <label for="adminSelectCardId">เลือก Card (#1 - #10)</label>
+              <select id="adminSelectCardId" class="admin-select">
+                <option value="1">Card #1</option>
+                <option value="2">Card #2</option>
+                <option value="3">Card #3</option>
+                <option value="4">Card #4</option>
+                <option value="5">Card #5</option>
+                <option value="6">Card #6</option>
+                <option value="7">Card #7</option>
+                <option value="8">Card #8</option>
+                <option value="9">Card #9</option>
+                <option value="10">Card #10</option>
+              </select>
+            </div>
+
+            <div class="admin-form-group subfield-move" id="subfieldNewStatus">
+              <label for="adminSelectNewStatus">เลือกสถานะใหม่ (New Status)</label>
+              <select id="adminSelectNewStatus" class="admin-select">
+                <option value="JOB_BOARD">📋 JOB_BOARD (รอประกอบ)</option>
+                <option value="WIP_ASSEMBLY">⚙️ WIP_ASSEMBLY (กำลังประกอบ)</option>
+                <option value="QA_PACKING">🔍 QA_PACKING (รอตรวจ QA / แพ็ก)</option>
+                <option value="FG_SHELF">📦 FG_SHELF (พร้อมส่งบนชั้น FG)</option>
+                <option value="SHIPPED">🚚 SHIPPED (จัดส่งแล้ว)</option>
+              </select>
+            </div>
+
+            <!-- DYNAMIC SUBFIELDS: ADJUST SHIPPED -->
+            <div class="admin-form-group full-width" id="subfieldAdjustShipped" style="display: none;">
+              <label for="adminInputNewShipped">ยอดจัดส่งสะสมใหม่เดือนนี้ (กล่อง)</label>
+              <input type="number" id="adminInputNewShipped" class="admin-input" min="0" placeholder="เช่น 0">
+            </div>
+
+            <!-- DYNAMIC SUBFIELDS: UPDATE MONTHLY HISTORY -->
+            <div class="admin-form-group" id="subfieldMonthlyHistMonth" style="display: none;">
+              <label for="adminSelectMonth">เลือกเดือน (ปี 2026)</label>
+              <select id="adminSelectMonth" class="admin-select">
+                <option value="1">มกราคม (Jan)</option>
+                <option value="2">กุมภาพันธ์ (Feb)</option>
+                <option value="3">มีนาคม (Mar)</option>
+                <option value="4">เมษายน (Apr)</option>
+                <option value="5">พฤษภาคม (May)</option>
+                <option value="6">มิถุนายน (Jun)</option>
+                <option value="7">กรกฎาคม (Jul)</option>
+                <option value="8">สิงหาคม (Aug - ปัจจุบัน)</option>
+                <option value="9">กันยายน (Sep)</option>
+                <option value="10">ตุลาคม (Oct)</option>
+                <option value="11">พฤศจิกายน (Nov)</option>
+                <option value="12">ธันวาคม (Dec)</option>
+              </select>
+            </div>
+
+            <div class="admin-form-group" id="subfieldMonthlyHistQty" style="display: none;">
+              <label for="adminInputMonthlyQty">จำนวนยอดจัดส่ง (กล่อง)</label>
+              <input type="number" id="adminInputMonthlyQty" class="admin-input" min="0" placeholder="เช่น 10">
+            </div>
+
+            <!-- DYNAMIC SUBFIELDS: UPDATE PROJECT STATUS -->
+            <div class="admin-form-group" id="subfieldProjStatus" style="display: none;">
+              <label for="adminSelectProjStatus">สถานะโครงการ</label>
+              <select id="adminSelectProjStatus" class="admin-select">
+                <option value="RUNNING">RUNNING (ปกติ)</option>
+                <option value="ISSUE">ISSUE (พบปัญหา/ไลน์หยุด)</option>
+                <option value="NO_PRODUCTION">NO_PRODUCTION (ไม่มีการผลิต/FG ครบ)</option>
+              </select>
+            </div>
+
+            <div class="admin-form-group" id="subfieldProjDetail" style="display: none;">
+              <label for="adminInputProjDetail">รายละเอียดสถานะ</label>
+              <input type="text" id="adminInputProjDetail" class="admin-input" placeholder="เช่น รอชิ้นงานจากแผนกเชื่อม">
+            </div>
+
+            <!-- DYNAMIC SUBFIELDS: RESET AUG BASELINE NOTICE -->
+            <div class="admin-form-group full-width" id="subfieldResetAugNotice" style="display: none;">
+              <div style="padding: 0.8rem; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 10px; color: #38bdf8; font-size: 0.85rem; font-weight: 600;">
+                ℹ️ รีเซ็ตสถานะการ์ดเริ่มต้นเดือนสิงหาคม 2026: #1-2 (WIP), #3-8 (Job Board), #9-10 (FG Shelf) และรีเซ็ตยอดจัดส่งเดือนสิงหาคมเป็น 0
+              </div>
+            </div>
+
+            <!-- DYNAMIC SUBFIELDS: RESET BOARD NOTICE -->
+            <div class="admin-form-group full-width" id="subfieldResetNotice" style="display: none;">
+              <div style="padding: 0.8rem; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 10px; color: #fb7185; font-size: 0.85rem; font-weight: 600;">
+                ⚠️ คำเตือน: การรีเซ็ตบอร์ดจะคืนค่าการ์ดทั้งหมดกลับสู่ JOB_BOARD (รอประกอบ) และเปลี่ยนสถานะโครงการเป็น RUNNING
+              </div>
+            </div>
+
+            <!-- REASON CODE -->
+            <div class="admin-form-group full-width">
+              <label for="adminReasonCode">📝 เหตุผลในการแก้ไข (Reason Code)</label>
+              <select id="adminReasonCode" class="admin-select" required>
+                <option value="[QA_REJECT]">[QA_REJECT] ชิ้นงานไม่ผ่าน QA Inspection (ส่งกลับประกอบใหม่)</option>
+                <option value="[SCAN_ERROR]">[SCAN_ERROR] สแกน QR ผิดพลาด / ข้ามขั้นตอน</option>
+                <option value="[INVENTORY_ADJUST]">[INVENTORY_ADJUST] ปรับปรุงยอดจัดส่งตามเอกสารจริง (Cohu_Y2026.xlsx)</option>
+                <option value="[CARD_REPLACEMENT]">[CARD_REPLACEMENT] รีเซ็ตการ์ดวนรอบใหม่ / การ์ดชำรุด</option>
+                <option value="[SHIFT_RESET]">[SHIFT_RESET] เริ่มต้นกะการทำงานใหม่</option>
+                <option value="[OTHER]">[OTHER] อื่นๆ (ระบุในหมายเหตุ)</option>
+              </select>
+            </div>
+
+            <!-- REMARKS -->
+            <div class="admin-form-group full-width">
+              <label for="adminRemarks">💬 หมายเหตุเพิ่มเติม (Remarks)</label>
+              <input type="text" id="adminRemarks" class="admin-input" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)">
+            </div>
+
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+            <button type="button" class="btn-modal-cancel" id="btnCancelAdminForm">ยกเลิก</button>
+            <button type="submit" class="btn-modal-submit" style="background: linear-gradient(135deg, #d97706, #b45309);">💾 ยืนยันบันทึกข้อมูล</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 2: AUDIT LOG & EXPORTS -->
+      <div class="admin-tab-content" id="tabContentAudit">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.88rem; color: #94a3b8; font-weight: 600;">ประวัติการแก้ไขและส่งออกรายงานฐานข้อมูล</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-export-csv" id="btnExportMonthlyExcel" style="background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;">📊 Export Excel (Monthly Shipments)</button>
+            <button class="btn-export-csv" id="btnExportAuditCSV">📥 Export CSV (Audit Trail)</button>
+          </div>
+        </div>
+
+        <div class="audit-table-wrapper">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>วัน-เวลา</th>
+                <th>ผู้บันทึก (ID)</th>
+                <th>การดำเนินงาน</th>
+                <th>การเปลี่ยนแปลง (เดิม ➔ ใหม่)</th>
+                <th>เหตุผล & หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogTableBody">
+              <!-- Audit Logs injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: CYCLE TIME ANALYTICS -->
+      <div class="admin-tab-content" id="tabContentCycle">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.88rem; color: #94a3b8; font-weight: 600;">มอนิเตอร์เวลาประกอบจริงเทียบเป้าหมายเวลามาตรฐาน (Target ST: 12.0 ชม./กล่อง)</span>
+          <button class="btn-export-csv" id="btnExportCycleExcel" style="background: rgba(52, 211, 153, 0.2); border-color: rgba(52, 211, 153, 0.5); color: #34d399;">📊 Export Cycle Time Report (Excel/CSV)</button>
+        </div>
+
+        <!-- CYCLE METRICS KPI SUMMARY -->
+        <div class="cycle-kpi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+          <div class="cycle-kpi-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; text-align: center;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">เป้าหมายเวลา (Target ST)</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #fbbf24; margin-top: 0.2rem;">12.0 ชม.</div>
+          </div>
+          <div class="cycle-kpi-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; text-align: center;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">เวลาประกอบเฉลี่ย (Actual Avg)</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #34d399; margin-top: 0.2rem;" id="cycleKpiAvg">0 ชม.</div>
+          </div>
+          <div class="cycle-kpi-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; text-align: center;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">เร็วสุด / ช้าสุด (Min / Max)</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #38bdf8; margin-top: 0.2rem;" id="cycleKpiMinMax">0 / 0 ชม.</div>
+          </div>
+          <div class="cycle-kpi-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; text-align: center;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">อัตราตรงเป้าหมาย (On-Time %)</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #a78bfa; margin-top: 0.2rem;" id="cycleKpiOnTime">100%</div>
+          </div>
+        </div>
+
+        <div class="audit-table-wrapper">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>วันที่</th>
+                <th>Card #</th>
+                <th>เวลารับงาน (WIP)</th>
+                <th>เวลาส่ง QA</th>
+                <th>เวลาประกอบจริง</th>
+                <th>เทียบเป้าหมาย (12 ชม.)</th>
+                <th>Man-Hours (2 ช่าง)</th>
+              </tr>
+            </thead>
+            <tbody id="cycleTableBody">
+              <!-- Cycle logs injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT SCRIPTS -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Z-Link Mobile Card Scanner | Aveam</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-sakura-pink">
+
+  <div class="mobile-app-wrapper">
+    
+    <!-- MOBILE HEADER -->
+    <header class="mobile-header">
+      <div class="brand-logo-badge" style="display: inline-block; margin-bottom: 0.5rem;">🌸 AVEAM MOBILE</div>
+      <h2 style="font-size: 1.35rem; font-weight: 800;">Z-Link Kanban Scanner</h2>
+      <p style="font-size: 0.82rem;">สแกนหรือเลือกการ์ดเพื่ออัปเดตสถานะด้วย 1-Tap</p>
+    </header>
+
+    <!-- MAIN CARD STATUS DISPLAY -->
+    <main class="mobile-card-display">
+      <div class="mobile-card-id" id="mobileCardId">CARD #1</div>
+      <div class="mobile-status-pill" id="mobileStatusPill">กำลังโหลดสถานะ...</div>
+
+      <!-- 1-TAP ACTION BUTTON CONTAINER -->
+      <div id="actionButtonContainer">
+        <button class="btn-action-primary btn-wip">
+          กำลังโหลด...
+        </button>
+      </div>
+
+      <!-- UNDO / REVOKE COMMAND BUTTON CONTAINER -->
+      <div id="undoButtonContainer" style="margin-top: 1rem;">
+        <!-- Undo button rendered dynamically -->
+      </div>
+    </main>
+
+    <!-- QUICK CARD SELECTOR (NUMBERS 1 TO 10) -->
+    <section class="quick-card-selector">
+      <div class="selector-title">เลือกหมายเลขการ์ด (Card #1 - #10)</div>
+      <div class="card-buttons-grid" id="cardButtonsGrid">
+        <!-- Buttons 1..10 injected dynamically -->
+      </div>
+    </section>
+
+    <!-- ASSEMBLY PROJECT STATUS CONTROLLER -->
+    <section class="assembly-status-section">
+      <div class="assembly-status-title">สถานะการประกอบ (Assembly Status)</div>
+      <div class="assembly-status-grid">
+        <button class="btn-status-option btn-status-running" id="btnStatusRunning" onclick="setAssemblyStatus('RUNNING')">
+          🔵 RUNNING (รันงานปกติ)
+        </button>
+        <button class="btn-status-option btn-status-issue" id="btnStatusIssue" onclick="openIssueModal()">
+          🔴 ISSUE (พบปัญหา)
+        </button>
+        <button class="btn-status-option btn-status-noprod" id="btnStatusNoProd" onclick="setAssemblyStatus('NO_PRODUCTION', 'งาน FG ครบ 10 กล่องแล้ว')">
+          🟢 NO PRODUCTION (หยุดผลิต)
+        </button>
+      </div>
+    </section>
+
+    <!-- FOOTER NAV LINK -->
+    <footer style="text-align: center; margin-top: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+      <a href="print-qr.html" target="_blank" style="color: #f472b6; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
+        🖨️ พิมพ์ป้าย QR Code ติดหลังการ์ด (Cards #1 - #10)
+      </a>
+      <a href="index.html" style="color: #be185d; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
+        🖥️ ดูหน้าจอ Full Dashboard (PC/TV)
+      </a>
+    </footer>
+
+  </div>
+
+  <!-- ISSUE INPUT POPUP MODAL -->
+  <div id="issueModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>🔴 ระบุปัญหาที่พบ (Issue Detail)</span>
+        <button class="btn-close-modal" onclick="closeIssueModal()">✖</button>
+      </div>
+      <div class="modal-body">
+        <label for="issueInput">รายละเอียดปัญหาการประกอบที่พบ:</label>
+        <textarea id="issueInput" rows="3" placeholder="เช่น คอยล์ขาด / รอน็อต / เครื่องขัดข้อง..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeIssueModal()">ยกเลิก</button>
+        <button class="btn-modal-submit" onclick="submitIssueDetail()">💾 บันทึกปัญหา</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT SCRIPTS -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/scan.js"></script>
+</body>
+</html>

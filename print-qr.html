@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z-LINK Kanban Cards - QR Code Printable Labels (A4 Single Page) | Aveam</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Global Page Styling */
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 1.25rem;
+    }
+
+    .print-control-panel {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(244, 114, 182, 0.4);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.75rem;
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #f472b6;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .url-config-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .url-input-group {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .url-input-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+
+    .url-input-group input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .url-input-group input:focus {
+      border-color: #f472b6;
+      box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.2);
+    }
+
+    .btn-print {
+      background: linear-gradient(135deg, #ec4899, #be185d);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.75rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+    }
+
+    .btn-back {
+      background: #334155;
+      color: #f8fafc;
+      border: none;
+      padding: 0.65rem 1.1rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+      background: #475569;
+    }
+
+    .a4-notice-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #34d399;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    /* SCREEN PREVIEW CONTAINER (A4 Proportion Simulation) */
+    .printable-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* INDIVIDUAL KANBAN CARD LABEL (Compact Horizontal Side-by-Side Design) */
+    .qr-card-label {
+      background: #ffffff;
+      color: #0f172a;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      position: relative;
+      min-height: 125px;
+    }
+
+    .card-info-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-right: 0.5rem;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .brand-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      background: #fce7f3;
+      color: #be185d;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .system-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .card-big-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.1;
+      margin: 0.15rem 0;
+      letter-spacing: -0.5px;
+    }
+
+    .card-subtitle {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 0.3rem;
+    }
+
+    .scan-instruction {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #be185d;
+      background: #fff1f2;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      border: 1px solid #fecdd3;
+      display: inline-block;
+      margin-bottom: 0.2rem;
+    }
+
+    .target-url-text {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      font-family: monospace;
+      word-break: break-all;
+      line-height: 1.1;
+    }
+
+    .qr-code-side {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-code-wrapper {
+      background: #ffffff;
+      padding: 0.35rem;
+      border: 2px solid #0f172a;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 105px;
+      height: 105px;
+      box-sizing: border-box;
+    }
+
+    .qr-code-wrapper svg,
+    .qr-code-wrapper img,
+    .qr-code-wrapper canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .cut-line-hint {
+      position: absolute;
+      top: -10px;
+      right: 12px;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      background: #0f172a;
+      padding: 0 0.3rem;
+    }
+
+    /* ==========================================================================
+       MEDIA PRINT STYLES - STRICT 1-PAGE A4 PORTRAIT ENFORCEMENT
+       ========================================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 4mm 5mm;
+    }
+
+    @media print {
+      html, body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+      }
+
+      .print-control-panel,
+      .cut-line-hint,
+      header,
+      footer {
+        display: none !important;
+      }
+
+      .printable-cards-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-rows: repeat(5, 1fr) !important;
+        gap: 3mm 4mm !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 288mm !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .qr-card-label {
+        border: 1.5px dashed #475569 !important;
+        border-radius: 8px !important;
+        padding: 2.5mm 3.5mm !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        height: 52mm !important;
+        max-height: 52mm !important;
+        box-sizing: border-box !important;
+      }
+
+      .brand-tag {
+        background: #fce7f3 !important;
+        color: #be185d !important;
+        font-size: 6.5pt !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .system-tag {
+        font-size: 6.5pt !important;
+        color: #475569 !important;
+      }
+
+      .card-big-title {
+        font-size: 13pt !important;
+        color: #000000 !important;
+        font-weight: 900 !important;
+      }
+
+      .card-subtitle {
+        font-size: 7.5pt !important;
+        color: #334155 !important;
+      }
+
+      .scan-instruction {
+        font-size: 6.5pt !important;
+        background: #fff1f2 !important;
+        color: #be185d !important;
+        border: 1px solid #fecdd3 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .target-url-text {
+        font-size: 5.5pt !important;
+        color: #64748b !important;
+      }
+
+      .qr-code-wrapper {
+        width: 44mm !important;
+        height: 44mm !important;
+        padding: 1mm !important;
+        border: 1.5px solid #000000 !important;
+        border-radius: 6px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP CONTROL PANEL (EXCLUDED FROM PRINT) -->
+  <div class="print-control-panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span>🖨️ ป้าย QR Code ติดหลัง Kanban Card (#1 - #10)</span>
+        <span class="a4-notice-badge">📄 การันตีลงพอดีกระดาษ A4 หน้าเดียว 100%</span>
+      </div>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <a href="index.html" class="btn-back">⬅️ กลับ Dashboard</a>
+        <button class="btn-print" onclick="window.print()">
+          <span>🖨️ สั่งพิมพ์ลงกระดาษ A4 (1 Page)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="url-config-row">
+      <div class="url-input-group">
+        <label for="baseUrlInput">🌐 Base URL ของระบบ (จะถูกรวมเป็น ?card=X ใน QR Code):</label>
+        <input type="text" id="baseUrlInput" placeholder="https://your-domain.com/scan.html">
+      </div>
+      <button class="btn-back" onclick="updateQRCodes()" style="margin-top: 1.25rem; background: #be185d; color: white;">
+        🔄 อัปเดต QR Code
+      </button>
+    </div>
+    <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.5rem;">
+      💡 <strong>คำแนะนำ:</strong> ป้ายทั้ง 10 ใบถูกจัดโครงสร้างแนวนอน (Side-by-Side) พอดีกับกระดาษ A4 แผ่นเดียว 100% ไม่หลุดไปหน้า 2 เมื่อพิมพ์
+    </div>
+  </div>
+
+  <!-- PRINTABLE CARDS CONTAINER (10 CARDS) -->
+  <div class="printable-cards-grid" id="cardsPrintContainer">
+    <!-- Generated dynamically via JS -->
+  </div>
+
+  <!-- QR CODE GENERATOR SCRIPT (OFFLINE STANDALONE SVG GENERATOR) -->
+  <script src="js/qrcode.min.js"></script>
+  <script>
+    // Offline QR code generator using qrcode.min.js SVG renderer
+    function generateQRCodeSVG(text) {
+      if (typeof qrcode !== 'undefined') {
+        try {
+          const typeNumber = 0; // Auto detect
+          const errorCorrectionLevel = 0; // Level M
+          const qr = qrcode(typeNumber, errorCorrectionLevel);
+          qr.addData(text);
+          qr.make();
+          return qr.createSvgTag(3, 1);
+        } catch (e) {
+          console.error("qrcode library error:", e);
+        }
+      }
+      // Fallback Image URL using QuickChart API if script fails
+      const encoded = encodeURIComponent(text);
+      return `<img src="https://quickchart.io/qr?text=${encoded}&size=150&margin=1" alt="QR Code" style="width:100%;height:100%;object-fit:contain;">`;
+    }
+
+    // Default base URL determination
+    function getInitialBaseUrl() {
+      const currentUrl = window.location.href;
+      const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1) + 'scan.html';
+      return baseUrl;
+    }
+
+    function renderPrintableCards() {
+      const baseUrlInput = document.getElementById('baseUrlInput');
+      let targetBase = baseUrlInput.value.trim();
+
+      if (!targetBase) {
+        targetBase = getInitialBaseUrl();
+        baseUrlInput.value = targetBase;
+      }
+
+      const container = document.getElementById('cardsPrintContainer');
+      let html = '';
+
+      for (let i = 1; i <= 10; i++) {
+        const fullCardUrl = targetBase.includes('?') 
+          ? `${targetBase}&card=${i}`
+          : `${targetBase}?card=${i}`;
+
+        const qrSvg = generateQRCodeSVG(fullCardUrl);
+
+        html += `
+          <div class="qr-card-label">
+            <span class="cut-line-hint">✂️ รอยตัดป้าย</span>
+            
+            <div class="card-info-side">
+              <div class="brand-row">
+                <span class="brand-tag">🌸 AVEAM</span>
+                <span class="system-tag">Z-LINK KANBAN</span>
+              </div>
+              <div class="card-big-title">CARD #${i}</div>
+              <div class="card-subtitle">ความจุ: 1 กล่อง (Slot #${i})</div>
+              <div class="scan-instruction">📱 สแกนอัปเดตสถานะ</div>
+              <div class="target-url-text">${fullCardUrl}</div>
+            </div>
+
+            <div class="qr-code-side">
+              <div class="qr-code-wrapper" id="qr-box-${i}">
+                ${qrSvg}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function updateQRCodes() {
+      renderPrintableCards();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('baseUrlInput').value = getInitialBaseUrl();
+      renderPrintableCards();
+    });
+  </script>
+</body>
+</html>
