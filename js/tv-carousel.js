@@ -27,7 +27,23 @@ window.addEventListener('message', (event) => {
   }
 });
 
+function updateTVScale() {
+  const scaler = document.getElementById('carouselScaler');
+  if (!scaler) return;
+  const targetWidth = 1920;
+  const targetHeight = 1080;
+  const scaleX = window.innerWidth / targetWidth;
+  const scaleY = window.innerHeight / targetHeight;
+  const scale = Math.min(scaleX, scaleY);
+  const translateX = (window.innerWidth - (targetWidth * scale)) / 2;
+  const translateY = (window.innerHeight - (targetHeight * scale)) / 2;
+  scaler.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+}
+
+window.addEventListener('resize', updateTVScale);
+
 document.addEventListener('DOMContentLoaded', () => {
+  updateTVScale();
   initCarousel();
 });
 
@@ -59,6 +75,7 @@ async function recalculateDailyReportDuration() {
 }
 
 async function initCarousel() {
+  updateTVScale();
   const frameDaily = document.getElementById('frameDailyReport');
   const frameZLink = document.getElementById('frameZLink');
 
@@ -94,13 +111,13 @@ function tick() {
     progressBar.style.width = `${progressPercent}%`;
   }
 
-  // Update badge label
+  // Update badge label (if present)
   const badgeLabel = document.getElementById('carouselBadgeLabel');
   if (badgeLabel) {
     if (currentFrameIndex === 0) {
-      badgeLabel.textContent = `📺 TV Display: Daily Report (${inProgressJobCount} งาน In-Progress - สลับใน ${secondsRemaining}s)`;
+      badgeLabel.textContent = `TV Display: Daily Report (${inProgressJobCount} งาน In-Progress - สลับใน ${secondsRemaining}s)`;
     } else {
-      badgeLabel.textContent = `📺 TV Display: Z-Link Dashboard (สลับใน ${secondsRemaining}s)`;
+      badgeLabel.textContent = `TV Display: Z-Link Dashboard (สลับใน ${secondsRemaining}s)`;
     }
   }
 
