@@ -4,9 +4,9 @@
    ========================================================================== */
 
 const CONFIG = {
-  PER_JOB_DURATION: 15,          // 15 seconds per In-Progress job
-  MIN_DAILY_REPORT_DURATION: 30, // Minimum 30 seconds for Daily Report fallback
-  ZLINK_DURATION: 30,            // 30 seconds fixed for Z-Link Dashboard
+  PER_JOB_DURATION: 15,           // 15 seconds per In-Progress job
+  MIN_DAILY_REPORT_DURATION: 120, // Minimum 120 seconds (2 mins) for Daily Report so all 8 jobs complete rotation
+  ZLINK_DURATION: 45,             // 45 seconds for Z-Link Dashboard
   DAILY_REPORT_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/dashboard.html',
   DATA_JSON_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/projects_data.json'
 };
@@ -14,13 +14,13 @@ const CONFIG = {
 let currentFrameIndex = 0; // 0 = Daily Report, 1 = Z-Link Dashboard
 let secondsRemaining = CONFIG.MIN_DAILY_REPORT_DURATION;
 let currentTotalDuration = CONFIG.MIN_DAILY_REPORT_DURATION;
-let inProgressJobCount = 0;
+let inProgressJobCount = 8;
 let timerInterval = null;
 
 // Listen for postMessage from the Daily Report iframe if sent
 window.addEventListener('message', (event) => {
   if (event.data && typeof event.data.inProgressCount === 'number') {
-    inProgressJobCount = event.data.inProgressCount;
+    inProgressJobCount = Math.max(8, event.data.inProgressCount);
     if (currentFrameIndex === 0) {
       recalculateDailyReportDuration();
     }
@@ -59,18 +59,18 @@ async function fetchInProgressCount() {
         p.status === 'in_progress' ||
         (p.progress > 0 && p.progress < 100)
       );
-      return Math.max(1, activeJobs.length);
+      return Math.max(8, activeJobs.length);
     }
   } catch (err) {
     console.warn('Could not fetch projects_data.json, using default count fallback:', err);
   }
-  return inProgressJobCount > 0 ? inProgressJobCount : 4; // default fallback if offline
+  return inProgressJobCount > 0 ? inProgressJobCount : 8; // default fallback if offline
 }
 
 async function recalculateDailyReportDuration() {
   const count = await fetchInProgressCount();
-  inProgressJobCount = count;
-  currentTotalDuration = Math.max(CONFIG.MIN_DAILY_REPORT_DURATION, count * CONFIG.PER_JOB_DURATION);
+  inProgressJobCount = Math.max(8, count);
+  currentTotalDuration = Math.max(CONFIG.MIN_DAILY_REPORT_DURATION, inProgressJobCount * CONFIG.PER_JOB_DURATION);
   secondsRemaining = currentTotalDuration;
 }
 

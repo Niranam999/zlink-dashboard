@@ -1380,3 +1380,96 @@ body.theme-sakura-pink footer a {
   box-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
 }
 
+/* ==========================================================================
+   TV EMBEDDED MODE & HIGH READABILITY ENHANCEMENTS (43" TV)
+   ========================================================================== */
+
+.tv-embedded .btn-tv-mode,
+.tv-embedded #btnOpenAdminModal,
+.tv-embedded a[href="print-qr.html"] {
+  display: none !important;
+}
+
+.tv-embedded .dashboard-header {
+  padding: 0.65rem 1.5rem;
+}
+
+.tv-embedded .brand-logo-badge {
+  font-size: 1.4rem;
+  padding: 0.5rem 1rem;
+}
+
+.tv-embedded .title-group h1 {
+  font-size: 1.7rem;
+}
+
+.tv-embedded .title-group p {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.tv-embedded .kpi-label {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.tv-embedded .kpi-value {
+  font-size: 1.65rem;
+  color: #ffffff;
+}
+
+.tv-embedded .live-time {
+  font-size: 1.6rem;
+}
+
+.tv-embedded .live-date {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.tv-embedded .column-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.tv-embedded .column-badge {
+  font-size: 0.9rem;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.tv-embedded .card-compact-brand {
+  font-size: 1rem;
+}
+
+.tv-embedded .card-compact-bignum {
+  font-size: 2.5rem;
+}
+
+.tv-embedded .card-compact-status {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.tv-embedded .kanban-card.card-compact .card-time {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.tv-embedded .info-card-title {
+  font-size: 1.15rem;
+}
+
+.tv-embedded .operator-number {
+  font-size: 3.2rem;
+}
+
+.tv-embedded .fg-slot-number {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+
