@@ -1,22 +1,64 @@
 /* ==========================================================================
    Z-LINK KANBAN REALTIME DASHBOARD - TV CAROUSEL CONTROLLER (tv-carousel.html)
+   Dynamic Carousel Duration based on File 5 / Daily Report In-Progress Jobs
    ========================================================================== */
 
 const CONFIG = {
-  DAILY_REPORT_DURATION: 180, // seconds (3 minutes)
-  ZLINK_DURATION: 60,         // seconds (1 minute)
-  DAILY_REPORT_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/dashboard.html'
+  PER_JOB_DURATION: 15,          // 15 seconds per In-Progress job
+  MIN_DAILY_REPORT_DURATION: 30, // Minimum 30 seconds for Daily Report fallback
+  ZLINK_DURATION: 30,            // 30 seconds fixed for Z-Link Dashboard
+  DAILY_REPORT_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/dashboard.html',
+  DATA_JSON_URL: 'https://niranam999.github.io/aveam-daily-assembly-dashboard/projects_data.json'
 };
 
 let currentFrameIndex = 0; // 0 = Daily Report, 1 = Z-Link Dashboard
-let secondsRemaining = CONFIG.DAILY_REPORT_DURATION;
+let secondsRemaining = CONFIG.MIN_DAILY_REPORT_DURATION;
+let currentTotalDuration = CONFIG.MIN_DAILY_REPORT_DURATION;
+let inProgressJobCount = 0;
 let timerInterval = null;
+
+// Listen for postMessage from the Daily Report iframe if sent
+window.addEventListener('message', (event) => {
+  if (event.data && typeof event.data.inProgressCount === 'number') {
+    inProgressJobCount = event.data.inProgressCount;
+    if (currentFrameIndex === 0) {
+      recalculateDailyReportDuration();
+    }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   initCarousel();
 });
 
-function initCarousel() {
+async function fetchInProgressCount() {
+  try {
+    const res = await fetch(CONFIG.DATA_JSON_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error('Network response not ok');
+    const projects = await res.json();
+    if (Array.isArray(projects)) {
+      const activeJobs = projects.filter(p => 
+        (p.kanban_in_progress || 0) > 0 || 
+        p.kanban_stage === 'in_progress' ||
+        p.status === 'in_progress' ||
+        (p.progress > 0 && p.progress < 100)
+      );
+      return Math.max(1, activeJobs.length);
+    }
+  } catch (err) {
+    console.warn('Could not fetch projects_data.json, using default count fallback:', err);
+  }
+  return inProgressJobCount > 0 ? inProgressJobCount : 4; // default fallback if offline
+}
+
+async function recalculateDailyReportDuration() {
+  const count = await fetchInProgressCount();
+  inProgressJobCount = count;
+  currentTotalDuration = Math.max(CONFIG.MIN_DAILY_REPORT_DURATION, count * CONFIG.PER_JOB_DURATION);
+  secondsRemaining = currentTotalDuration;
+}
+
+async function initCarousel() {
   const frameDaily = document.getElementById('frameDailyReport');
   const frameZLink = document.getElementById('frameZLink');
 
@@ -33,8 +75,8 @@ function initCarousel() {
     }
   }
 
-  // Start with Frame 0 (Daily Report)
-  switchFrame(0);
+  // Calculate initial dynamic duration
+  await switchFrame(0);
 
   // Start rotation countdown ticker
   if (timerInterval) clearInterval(timerInterval);
@@ -44,8 +86,7 @@ function initCarousel() {
 function tick() {
   secondsRemaining--;
 
-  const totalDuration = (currentFrameIndex === 0) ? CONFIG.DAILY_REPORT_DURATION : CONFIG.ZLINK_DURATION;
-  const progressPercent = Math.min(100, Math.max(0, ((totalDuration - secondsRemaining) / totalDuration) * 100));
+  const progressPercent = Math.min(100, Math.max(0, ((currentTotalDuration - secondsRemaining) / currentTotalDuration) * 100));
 
   // Update top progress bar
   const progressBar = document.getElementById('carouselProgress');
@@ -56,8 +97,11 @@ function tick() {
   // Update badge label
   const badgeLabel = document.getElementById('carouselBadgeLabel');
   if (badgeLabel) {
-    const currentName = (currentFrameIndex === 0) ? 'Assembly Progress Daily Report' : 'Z-Link Kanban Dashboard';
-    badgeLabel.textContent = `📺 TV Display: ${currentName} (สลับใน ${secondsRemaining}s)`;
+    if (currentFrameIndex === 0) {
+      badgeLabel.textContent = `📺 TV Display: Daily Report (${inProgressJobCount} งาน In-Progress - สลับใน ${secondsRemaining}s)`;
+    } else {
+      badgeLabel.textContent = `📺 TV Display: Z-Link Dashboard (สลับใน ${secondsRemaining}s)`;
+    }
   }
 
   // When timer reaches 0, switch frame
@@ -67,14 +111,14 @@ function tick() {
   }
 }
 
-function switchFrame(index) {
+async function switchFrame(index) {
   currentFrameIndex = index;
-  secondsRemaining = (currentFrameIndex === 0) ? CONFIG.DAILY_REPORT_DURATION : CONFIG.ZLINK_DURATION;
 
   const frameDaily = document.getElementById('frameDailyReport');
   const frameZLink = document.getElementById('frameZLink');
 
   if (index === 0) {
+    await recalculateDailyReportDuration();
     if (frameDaily) {
       frameDaily.removeAttribute('srcdoc');
       frameDaily.classList.add('active');
@@ -85,6 +129,9 @@ function switchFrame(index) {
       frameZLink.style.display = 'none';
     }
   } else {
+    currentTotalDuration = CONFIG.ZLINK_DURATION;
+    secondsRemaining = CONFIG.ZLINK_DURATION;
+
     if (frameZLink) {
       frameZLink.classList.add('active');
       frameZLink.style.display = 'block';
