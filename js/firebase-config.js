@@ -16,6 +16,15 @@ const AUTHENTICATED_USERS = {
   'Wanlop': { name: 'Wanlop (คุณวัลลภ)', pin: '1801221', role: 'Build Leader / Supervisor' }
 };
 
+// Cloud Realtime Database Configuration (Firebase Realtime REST Engine)
+const CLOUD_SYNC_CONFIG = {
+  // Free public realtime sync endpoint for Z-Link Kanban
+  ENDPOINT: 'https://aveam-zlink-kanban-default-rtdb.firebaseio.com/zlink_live.json',
+  FALLBACK_ENDPOINT: 'https://zlink-kanban-aveam-default-rtdb.asia-southeast1.firebasedatabase.app/zlink_live.json',
+  SYNC_INTERVAL_MS: 1500, // Check for updates every 1.5 seconds on TV / Dashboard
+  ENABLED: true
+};
+
 // Initial state for 10 Kanban Cards (#1 to #10) for August 2026
 // #1-#2: WIP Assembly, #3-#8: Job Board, #9-#10: FG Shelf
 const DEFAULT_INITIAL_CARDS = {
@@ -94,7 +103,11 @@ class ZLinkStateEngine {
       this.broadcastChannel = new BroadcastChannel(ZLINK_CHANNEL);
     }
     this.listeners = [];
+    this.lastKnownTimestamp = 0;
+    this.isSyncing = false;
+    this.cloudConnected = false;
     this.initStorage();
+    this.initCloudSync();
   }
 
   initStorage() {
@@ -580,22 +593,159 @@ class ZLinkStateEngine {
     document.body.removeChild(link);
   }
 
-  // Notify listeners and BroadcastChannel
+  // Notify listeners, BroadcastChannel and Cloud Realtime DB
   notify(cards) {
+    const timestamp = Date.now();
+    this.lastKnownTimestamp = timestamp;
+
     const payload = {
       cards: cards || this.getCards(),
       monthlyShipped: this.getMonthlyShipped(),
       yearlyTotalShipped: this.getYearlyTotalShipped(2026),
       monthlyHistory: this.getMonthlyHistory(2026),
       projectStatus: this.getProjectStatus(),
-      timestamp: Date.now()
+      auditLogs: this.getAuditLogs(),
+      cycleLogs: this.getAssemblyCycleLogs(),
+      timestamp: timestamp
     };
 
+    // Broadcast across tabs/windows on the same browser (0ms instant)
     if (this.broadcastChannel) {
-      this.broadcastChannel.postMessage(payload);
+      try {
+        this.broadcastChannel.postMessage(payload);
+      } catch (e) {
+        console.warn('BroadcastChannel error:', e);
+      }
     }
 
-    this.listeners.forEach(cb => cb(payload));
+    // Call local subscribers
+    this.listeners.forEach(cb => {
+      try {
+        cb(payload);
+      } catch (e) {
+        console.error('Subscriber callback error:', e);
+      }
+    });
+
+    // Push changes to Cloud Realtime Database (for Mobile <-> TV Cross-Device Sync)
+    this.pushToCloud(payload);
+  }
+
+  // Initialize Cloud Realtime Synchronization Engine
+  initCloudSync() {
+    if (!CLOUD_SYNC_CONFIG.ENABLED) return;
+
+    // Initial pull from cloud on startup
+    this.pullFromCloud();
+
+    // Start background sync interval (checks cloud every 1.5s for cross-device changes)
+    setInterval(() => {
+      this.pullFromCloud();
+    }, CLOUD_SYNC_CONFIG.SYNC_INTERVAL_MS);
+  }
+
+  // Push local state to Cloud Realtime DB
+  async pushToCloud(payload) {
+    if (!CLOUD_SYNC_CONFIG.ENABLED || this.isSyncing) return;
+    this.isSyncing = true;
+
+    try {
+      const res = await fetch(CLOUD_SYNC_CONFIG.ENDPOINT, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        this.cloudConnected = true;
+        this.updateSyncBadgeUI(true);
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      // Fallback endpoint retry
+      try {
+        await fetch(CLOUD_SYNC_CONFIG.FALLBACK_ENDPOINT, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        this.cloudConnected = true;
+        this.updateSyncBadgeUI(true);
+      } catch (fallbackErr) {
+        // Keep working with local storage if offline
+        this.cloudConnected = false;
+        this.updateSyncBadgeUI(false);
+      }
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+
+  // Pull remote state from Cloud Realtime DB and merge if newer
+  async pullFromCloud() {
+    if (!CLOUD_SYNC_CONFIG.ENABLED || this.isSyncing) return;
+
+    try {
+      const res = await fetch(CLOUD_SYNC_CONFIG.ENDPOINT + '?t=' + Date.now());
+      if (!res.ok) return;
+
+      const remoteData = await res.json();
+      if (!remoteData || !remoteData.timestamp) return;
+
+      this.cloudConnected = true;
+      this.updateSyncBadgeUI(true);
+
+      // Only merge if remote data is newer than what we last recorded locally
+      if (remoteData.timestamp > this.lastKnownTimestamp) {
+        this.lastKnownTimestamp = remoteData.timestamp;
+
+        if (remoteData.cards) {
+          localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(remoteData.cards));
+        }
+        if (remoteData.monthlyShipped !== undefined) {
+          localStorage.setItem(ZLINK_MONTHLY_KEY, remoteData.monthlyShipped.toString());
+        }
+        if (remoteData.monthlyHistory) {
+          localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(remoteData.monthlyHistory));
+        }
+        if (remoteData.projectStatus) {
+          localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(remoteData.projectStatus));
+        }
+        if (remoteData.auditLogs) {
+          localStorage.setItem(ZLINK_AUDIT_KEY, JSON.stringify(remoteData.auditLogs));
+        }
+        if (remoteData.cycleLogs) {
+          localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(remoteData.cycleLogs));
+        }
+
+        // Notify local UI listeners to re-render
+        this.listeners.forEach(cb => {
+          try {
+            cb(remoteData);
+          } catch (e) {
+            console.error('Remote sync callback error:', e);
+          }
+        });
+      }
+    } catch (err) {
+      // Offline fallback
+      this.cloudConnected = false;
+      this.updateSyncBadgeUI(false);
+    }
+  }
+
+  // Update visual cloud sync indicator if present in DOM
+  updateSyncBadgeUI(isOnline) {
+    const badges = document.querySelectorAll('.cloud-sync-status');
+    badges.forEach(badge => {
+      if (isOnline) {
+        badge.classList.remove('syncing');
+        badge.innerHTML = `<span class="cloud-sync-dot"></span> <span>Cloud Sync Realtime (Online)</span>`;
+      } else {
+        badge.classList.add('syncing');
+        badge.innerHTML = `<span class="cloud-sync-dot"></span> <span>Local Mode (Offline)</span>`;
+      }
+    });
   }
 
   // Subscribe to realtime state changes
@@ -606,6 +756,9 @@ class ZLinkStateEngine {
     if (this.broadcastChannel) {
       this.broadcastChannel.onmessage = (event) => {
         if (event.data) {
+          if (event.data.timestamp && event.data.timestamp > this.lastKnownTimestamp) {
+            this.lastKnownTimestamp = event.data.timestamp;
+          }
           callback(event.data);
         }
       };

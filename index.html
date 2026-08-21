@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Z-LINK Assembly Realtime Dashboard | Aveam</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260821_v2">
   <script>
     if (window.self !== window.top || window.location.search.includes('tv=true')) {
       document.documentElement.classList.add('tv-embedded');
@@ -18,7 +18,13 @@
     <div class="brand-section">
       <div class="brand-logo-badge">AVEAM</div>
       <div class="title-group">
-        <h1>Z-LINK ASSEMBLY REALTIME DASHBOARD</h1>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <h1>Z-LINK ASSEMBLY REALTIME DASHBOARD</h1>
+          <div class="cloud-sync-status" style="margin-bottom: 0;">
+            <span class="cloud-sync-dot"></span>
+            <span>Cloud Sync Realtime (Online)</span>
+          </div>
+        </div>
         <p>ระบบติดตามสถานะการประกอบ Z-Link แบบเรียลไทม์ (Kanban 10 Cards)</p>
       </div>
     </div>
@@ -452,8 +458,8 @@
 
 
   <!-- JAVASCRIPT SCRIPTS -->
-  <script src="js/firebase-config.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/firebase-config.js?v=20260821_v2"></script>
+  <script src="js/app.js?v=20260821_v2"></script>
 </body>
 </html>
 

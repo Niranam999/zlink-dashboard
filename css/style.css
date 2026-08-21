@@ -506,30 +506,103 @@ body {
 }
 
 .mobile-header {
+  position: relative;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding-top: 0.25rem;
+}
+
+.mobile-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+/* Mobile Exit Button (Top-Right) */
+.btn-mobile-exit {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fb7185;
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2);
+}
+
+.btn-mobile-exit:hover {
+  background: rgba(244, 63, 94, 0.3);
+  color: #fff;
+  border-color: #f43f5e;
+  transform: translateY(-1px);
+}
+
+.btn-mobile-exit:active {
+  transform: scale(0.95);
+}
+
+/* Cloud Realtime Sync Status Indicator */
+.cloud-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  margin-bottom: 0.5rem;
+}
+
+.cloud-sync-status.syncing {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.cloud-sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.cloud-sync-status.syncing .cloud-sync-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
+  animation: pulseGlow 1s infinite alternate;
 }
 
 .mobile-card-display {
   background: var(--bg-card);
   border: 1px solid var(--border-glow);
   border-radius: 20px;
-  padding: 2rem 1.5rem;
+  padding: 1.75rem 1.25rem;
   text-align: center;
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-card);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .mobile-card-id {
-  font-size: 3.5rem;
+  font-size: 3.2rem;
   font-weight: 800;
   letter-spacing: 1px;
   background: linear-gradient(135deg, #38bdf8, #34d399);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .mobile-status-pill {
@@ -569,6 +642,106 @@ body {
 .btn-qa { background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; }
 .btn-fg { background: linear-gradient(135deg, #34d399, #059669); color: #0f172a; }
 .btn-shipped { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #ffffff; }
+
+/* Confirmation Step Box & Save Button */
+.confirm-action-box {
+  background: rgba(15, 23, 42, 0.7);
+  border: 2px solid rgba(56, 189, 248, 0.4);
+  border-radius: 16px;
+  padding: 1.25rem 1rem;
+  margin-top: 0.5rem;
+  animation: cardFadeIn 0.25s ease-out;
+}
+
+.confirm-status-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1.1rem;
+  flex-wrap: wrap;
+}
+
+.confirm-from-badge {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.confirm-arrow {
+  color: #38bdf8;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.confirm-to-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.confirm-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.btn-save-confirm {
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-save-confirm:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-save-confirm:active {
+  transform: scale(0.97);
+}
+
+.btn-cancel-confirm {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(30, 41, 59, 0.6);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-confirm:hover {
+  background: rgba(51, 65, 85, 0.8);
+  color: #f8fafc;
+}
+
+.btn-cancel-confirm:active {
+  transform: scale(0.98);
+}
 
 /* Undo / Revoke Command Button Styles */
 .btn-undo-action {

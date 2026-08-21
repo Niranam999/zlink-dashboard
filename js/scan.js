@@ -3,6 +3,8 @@
    ========================================================================== */
 
 let selectedCardId = 1;
+let pendingNextStatus = null; // Track status pending confirmation (Save flow)
+let lastActionState = null;   // Track single-use undo: { cardId, fromStatus, toStatus, canUndo }
 
 document.addEventListener('DOMContentLoaded', () => {
   // Parse card number from URL parameter ?card=X
@@ -14,18 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMobileUI();
 
-  // Listen for realtime updates
+  // Listen for realtime updates from state engine (Cloud / Local)
   if (window.zlinkState) {
     window.zlinkState.onStateChange(() => {
       renderMobileUI();
     });
   }
 });
-
-let pendingNextStatus = 'WIP_ASSEMBLY';
-let isSaving = false;
-
-let lastActionState = null; // Track single-use undo: { cardId, fromStatus, toStatus, canUndo }
 
 // Render Mobile Scanner UI
 function renderMobileUI() {
@@ -37,39 +34,43 @@ function renderMobileUI() {
 
   if (cardIdElem) cardIdElem.textContent = `CARD #${selectedCardId}`;
 
-  // Render Status Badge & Action Button based on state machine
+  // Status configuration mapping
   const statusConfig = {
     JOB_BOARD: {
       label: 'อยู่ Job Board (รอประกอบ)',
       pillBg: 'rgba(148, 163, 184, 0.2)',
       pillColor: '#94a3b8',
-      btnText: '▶ เริ่มประกอบ (Move to WIP)',
+      btnText: '▶ เลื่อนสถานะไป: กำลังประกอบ (WIP)',
       btnClass: 'btn-wip',
-      nextStatus: 'WIP_ASSEMBLY'
+      nextStatus: 'WIP_ASSEMBLY',
+      nextLabel: 'WIP Assembly (กำลังประกอบ)'
     },
     WIP_ASSEMBLY: {
       label: 'กำลังประกอบ (WIP)',
       pillBg: 'rgba(56, 189, 248, 0.2)',
       pillColor: '#38bdf8',
-      btnText: '🔍 ส่งตรวจ QA / แพ็กงาน',
+      btnText: '🔍 เลื่อนสถานะไป: ส่งตรวจ QA / แพ็กงาน',
       btnClass: 'btn-qa',
-      nextStatus: 'QA_PACKING'
+      nextStatus: 'QA_PACKING',
+      nextLabel: 'QA & Packing (ตรวจเช็ค QA)'
     },
     QA_PACKING: {
       label: 'รอตรวจ QA / แพ็กงาน',
       pillBg: 'rgba(251, 191, 36, 0.2)',
       pillColor: '#fbbf24',
-      btnText: `📦 วางบนชั้น FG Slot #${selectedCardId}`,
+      btnText: `📦 เลื่อนสถานะไป: วางบนชั้น FG Slot #${selectedCardId}`,
       btnClass: 'btn-fg',
-      nextStatus: 'FG_SHELF'
+      nextStatus: 'FG_SHELF',
+      nextLabel: `ชั้นวาง FG Slot #${selectedCardId}`
     },
     FG_SHELF: {
       label: `อยู่บนชั้น FG Slot #${selectedCardId}`,
       pillBg: 'rgba(52, 211, 153, 0.2)',
       pillColor: '#34d399',
-      btnText: '🚚 Shipping จัดส่งสินค้า (Shipped)',
+      btnText: '🚚 เลื่อนสถานะไป: Shipping ตัดจัดส่ง (Shipped)',
       btnClass: 'btn-shipped',
-      nextStatus: 'SHIPPED'
+      nextStatus: 'SHIPPED',
+      nextLabel: 'จัดส่งแล้ว (Shipped)'
     },
     SHIPPED: {
       label: 'จัดส่งแล้ว (กำลังคืนการ์ดเข้า Board)',
@@ -77,7 +78,8 @@ function renderMobileUI() {
       pillColor: '#a78bfa',
       btnText: '🔄 กำลังรีเซ็ตกลับเข้า Job Board...',
       btnClass: 'btn-wip',
-      nextStatus: 'JOB_BOARD'
+      nextStatus: 'JOB_BOARD',
+      nextLabel: 'Job Board (รอประกอบ)'
     }
   };
 
@@ -85,8 +87,8 @@ function renderMobileUI() {
     JOB_BOARD: 'Job Board (รอประกอบ)',
     WIP_ASSEMBLY: 'WIP Assembly (กำลังประกอบ)',
     QA_PACKING: 'QA & Packing (ตรวจเช็ค QA)',
-    FG_SHELF: 'ชั้น FG Shelf',
-    SHIPPED: 'จัดส่งแล้ว'
+    FG_SHELF: `ชั้น FG Slot #${selectedCardId}`,
+    SHIPPED: 'จัดส่งแล้ว (Shipped)'
   };
 
   const config = statusConfig[cardData.status] || statusConfig.JOB_BOARD;
@@ -112,18 +114,45 @@ function renderMobileUI() {
           กรุณาเคลียร์งานใน WIP ให้เสร็จก่อนหยิบการ์ดใบใหม่
         </div>
       `;
-    } else {
+    } else if (pendingNextStatus) {
+      // Step 2: Show Confirmation Box with SAVE button
+      const targetLabel = statusLabelsMap[pendingNextStatus] || pendingNextStatus;
+      const currentLabel = statusLabelsMap[cardData.status] || cardData.status;
+
       actionContainer.innerHTML = `
-        <button class="btn-action-primary ${config.btnClass}" onclick="handleOneTapAction('${config.nextStatus}')">
+        <div class="confirm-action-box">
+          <div style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 0.6rem; font-weight: 600;">
+            ยืนยันการเปลี่ยนสถานะของ <strong style="color: #38bdf8;">CARD #${selectedCardId}</strong>
+          </div>
+          <div class="confirm-status-flow">
+            <span class="confirm-from-badge">${currentLabel}</span>
+            <span class="confirm-arrow">➔</span>
+            <span class="confirm-to-badge">${targetLabel}</span>
+          </div>
+          <div class="confirm-btn-group">
+            <button class="btn-save-confirm" onclick="confirmSaveAction()">
+              <span>💾</span> <span>ยืนยันบันทึกข้อมูล (Save)</span>
+            </button>
+            <button class="btn-cancel-confirm" onclick="cancelPendingAction()">
+              <span>❌ ยกเลิก (Cancel)</span>
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      // Step 1: Default Action Button to choose next state
+      actionContainer.innerHTML = `
+        <button class="btn-action-primary ${config.btnClass}" onclick="selectNextStatus('${config.nextStatus}')">
           ${config.btnText}
         </button>
       `;
     }
   }
 
-  // Render Undo Button (Single-use ONLY right after pressing top action button)
+  // Render Undo Button (Single-use ONLY right after pressing top action button and saving)
   if (undoContainer) {
     const isUndoAvailable = (
+      !pendingNextStatus &&
       lastActionState &&
       lastActionState.cardId === selectedCardId &&
       lastActionState.canUndo === true
@@ -139,7 +168,7 @@ function renderMobileUI() {
     } else {
       undoContainer.innerHTML = `
         <button class="btn-undo-action disabled" disabled>
-          ↩️ ถอนคำสั่ง (กดได้ 1 ครั้งเฉพาะหลังกดปุ่มด้านบน)
+          ↩️ ถอนคำสั่ง (กดได้ 1 ครั้งเฉพาะหลังบันทึก)
         </button>
       `;
     }
@@ -148,20 +177,39 @@ function renderMobileUI() {
   renderQuickSelectorGrid();
 }
 
-// Handle 1-Tap Action Click (Forward state & enable single-use undo)
-function handleOneTapAction(nextStatus) {
+// Step 1: Select Next Status (Enters Pending / Confirmation State)
+function selectNextStatus(nextStatus) {
+  pendingNextStatus = nextStatus;
+  renderMobileUI();
+}
+
+// Cancel Pending Action
+function cancelPendingAction() {
+  pendingNextStatus = null;
+  renderMobileUI();
+}
+
+// Step 2: Confirm and Save Action (Commit to Realtime DB and State Engine)
+function confirmSaveAction() {
+  if (!pendingNextStatus) return;
+
   const currentCard = window.zlinkState.getCard(selectedCardId);
+  const targetStatus = pendingNextStatus;
 
   // Record action history for single-use undo
   lastActionState = {
     cardId: selectedCardId,
     fromStatus: currentCard.status,
-    toStatus: nextStatus,
+    toStatus: targetStatus,
     canUndo: true
   };
 
-  window.zlinkState.updateCardStatus(selectedCardId, nextStatus);
-  showToast(`✅ อัปเดต Card #${selectedCardId} เรียบร้อย!`);
+  // Update card status in StateEngine (pushes to Cloud and saves locally)
+  window.zlinkState.updateCardStatus(selectedCardId, targetStatus);
+  pendingNextStatus = null;
+
+  renderMobileUI();
+  showToast(`✅ บันทึก Card #${selectedCardId} เรียบร้อย!`);
 }
 
 // Handle Undo Action Click (Rewind state once and consume undo capability)
@@ -174,14 +222,17 @@ function handleUndoAction() {
   lastActionState.canUndo = false;
 
   window.zlinkState.updateCardStatus(selectedCardId, targetPrevStatus);
+  pendingNextStatus = null;
+  renderMobileUI();
   showToast(`↩️ ถอนคำสั่งเมื่อครู่เรียบร้อย! คืน Card #${selectedCardId} กลับสถานะเดิม`);
 }
 
-// Select Card Number
+// Select Card Number from Quick Selector
 function selectCard(num) {
   if (lastActionState && lastActionState.cardId !== num) {
     lastActionState.canUndo = false; // Reset undo when switching cards
   }
+  pendingNextStatus = null; // Clear pending state on card switch
   selectedCardId = num;
   renderMobileUI();
 }
@@ -205,7 +256,11 @@ function renderQuickSelectorGrid() {
 
 // Simple Toast Notification
 function showToast(msg) {
+  const existingToast = document.querySelector('.mobile-toast-notification');
+  if (existingToast) existingToast.remove();
+
   const toast = document.createElement('div');
+  toast.className = 'mobile-toast-notification';
   toast.style.cssText = `
     position: fixed;
     bottom: 2rem;
@@ -220,6 +275,7 @@ function showToast(msg) {
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     z-index: 10000;
     animation: cardFadeIn 0.3s ease;
+    white-space: nowrap;
   `;
   toast.textContent = msg;
   document.body.appendChild(toast);
@@ -275,4 +331,38 @@ function highlightActiveStatusButton(currentStatus) {
   if (currentStatus === 'RUNNING' && btnRun) btnRun.classList.add('active-status-selected');
   if (currentStatus === 'ISSUE' && btnIssue) btnIssue.classList.add('active-status-selected');
   if (currentStatus === 'NO_PRODUCTION' && btnNoProd) btnNoProd.classList.add('active-status-selected');
+}
+
+// Exit Application Actions
+function handleExitApp() {
+  const modal = document.getElementById('exitModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  } else {
+    confirmExitApp();
+  }
+}
+
+function closeExitModal() {
+  const modal = document.getElementById('exitModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function confirmExitApp() {
+  closeExitModal();
+  // Attempt to close window (works if opened via window.open / webapp)
+  window.close();
+
+  // If window.close is blocked by browser security (e.g. standard mobile tab), attempt back or provide feedback
+  setTimeout(() => {
+    try {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        showToast('ℹ️ ปิดแท็บนี้บนเบราว์เซอร์ของคุณได้เลยครับ');
+      }
+    } catch (e) {
+      showToast('ℹ️ ปิดแท็บนี้บนเบราว์เซอร์ของคุณได้เลยครับ');
+    }
+  }, 100);
 }
