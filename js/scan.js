@@ -365,16 +365,55 @@ function confirmExitApp() {
   }, 100);
 }
 
-// Reset Board Action for Mobile
+// Reset Board Action for Mobile (Protected by Admin PIN)
 function handleMobileResetBoard() {
-  if (confirm("ยืนยันรีเซ็ตการ์ดทั้งหมด (#1 - #10) กลับสู่สถานะรอประกอบ (Job Board) ใช่หรือไม่?")) {
-    if (window.zlinkState) {
-      window.zlinkState.resetBoard();
-      selectedCardId = 1;
-      pendingNextStatus = null;
-      lastActionState = null;
-      renderMobileUI();
-      showToast("🔄 รีเซ็ตการ์ดทั้งหมดกลับสู่สถานะรอประกอบเรียบร้อย!");
-    }
+  const modal = document.getElementById('resetPinModal');
+  const input = document.getElementById('adminResetPinInput');
+  const err = document.getElementById('resetPinError');
+  if (err) err.style.display = 'none';
+  if (input) input.value = '';
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      if (input) input.focus();
+    }, 150);
   }
+}
+
+function closeResetPinModal() {
+  const modal = document.getElementById('resetPinModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function submitAdminResetWithPin() {
+  const input = document.getElementById('adminResetPinInput');
+  const err = document.getElementById('resetPinError');
+  const pin = input ? input.value.trim() : '';
+
+  if (!pin) {
+    if (err) {
+      err.textContent = '❌ กรุณากรอกรหัสผ่าน Admin (PIN)';
+      err.style.display = 'block';
+    }
+    return;
+  }
+
+  // Verify PIN with State Engine (Wattana 511011 or 1234)
+  const auth = window.zlinkState.verifyUserPin('Wattana', pin);
+  if (!auth.success) {
+    if (err) {
+      err.textContent = '❌ รหัสผ่าน PIN ไม่ถูกต้อง เฉพาะผู้มีอำนาจเท่านั้น';
+      err.style.display = 'block';
+    }
+    return;
+  }
+
+  // Authorized! Perform clean reset
+  closeResetPinModal();
+  window.zlinkState.resetBoard();
+  selectedCardId = 1;
+  pendingNextStatus = null;
+  lastActionState = null;
+  renderMobileUI();
+  showToast('✅ ยืนยันรหัสผ่านสำเร็จ! รีเซ็ตกระดานเรียบร้อยแล้ว');
 }
