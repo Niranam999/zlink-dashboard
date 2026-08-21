@@ -16,12 +16,13 @@ const AUTHENTICATED_USERS = {
   'Wanlop': { name: 'Wanlop (คุณวัลลภ)', pin: '1801221', role: 'Build Leader / Supervisor' }
 };
 
-// Cloud Realtime Database Configuration (Firebase Realtime REST Engine)
+// Cloud Realtime Synchronization Engine (High-Speed Pub/Sub via SSE & HTTPS)
 const CLOUD_SYNC_CONFIG = {
-  // Free public realtime sync endpoint for Z-Link Kanban
-  ENDPOINT: 'https://aveam-zlink-kanban-default-rtdb.firebaseio.com/zlink_live.json',
-  FALLBACK_ENDPOINT: 'https://zlink-kanban-aveam-default-rtdb.asia-southeast1.firebasedatabase.app/zlink_live.json',
-  SYNC_INTERVAL_MS: 1500, // Check for updates every 1.5 seconds on TV / Dashboard
+  TOPIC: 'aveam-zlink-live-v2026',
+  PUB_URL: 'https://ntfy.sh/aveam-zlink-live-v2026',
+  SSE_URL: 'https://ntfy.sh/aveam-zlink-live-v2026/sse',
+  POLL_URL: 'https://ntfy.sh/aveam-zlink-live-v2026/json?poll=1',
+  POLL_INTERVAL_MS: 3000, // Backup poll every 3 seconds
   ENABLED: true
 };
 
@@ -635,102 +636,141 @@ class ZLinkStateEngine {
   initCloudSync() {
     if (!CLOUD_SYNC_CONFIG.ENABLED) return;
 
-    // Initial pull from cloud on startup
+    // 1. Initial pull from cloud on startup
     this.pullFromCloud();
 
-    // Start background sync interval (checks cloud every 1.5s for cross-device changes)
+    // 2. Connect to Live Server-Sent Events (SSE) stream for instant updates (< 0.2s)
+    if ('EventSource' in window) {
+      try {
+        this.eventSource = new EventSource(CLOUD_SYNC_CONFIG.SSE_URL);
+        this.eventSource.onopen = () => {
+          this.cloudConnected = true;
+          this.updateSyncBadgeUI(true);
+        };
+        this.eventSource.onmessage = (event) => {
+          try {
+            if (!event.data) return;
+            const msgObj = JSON.parse(event.data);
+            if (msgObj.event === 'message' && msgObj.message) {
+              const payload = JSON.parse(msgObj.message);
+              this.handleIncomingCloudPayload(payload);
+            }
+          } catch (err) {
+            // Ignore parse errors on ping/keepalive
+          }
+        };
+        this.eventSource.onerror = () => {
+          this.cloudConnected = false;
+          this.updateSyncBadgeUI(false);
+        };
+      } catch (e) {
+        console.warn('EventSource initialization failed, fallback to polling:', e);
+      }
+    }
+
+    // 3. Fallback background sync interval (checks every 3s)
     setInterval(() => {
       this.pullFromCloud();
-    }, CLOUD_SYNC_CONFIG.SYNC_INTERVAL_MS);
+    }, CLOUD_SYNC_CONFIG.POLL_INTERVAL_MS);
   }
 
-  // Push local state to Cloud Realtime DB
+  // Push local state to Cloud Realtime Pub/Sub
   async pushToCloud(payload) {
     if (!CLOUD_SYNC_CONFIG.ENABLED || this.isSyncing) return;
     this.isSyncing = true;
 
     try {
-      const res = await fetch(CLOUD_SYNC_CONFIG.ENDPOINT, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const payloadString = JSON.stringify(payload);
+      const res = await fetch(CLOUD_SYNC_CONFIG.PUB_URL, {
+        method: 'POST',
+        headers: {
+          'Title': 'ZLink State Update',
+          'Tags': 'kanban,zlink'
+        },
+        body: payloadString
       });
       if (res.ok) {
         this.cloudConnected = true;
         this.updateSyncBadgeUI(true);
-      } else {
-        throw new Error(`HTTP ${res.status}`);
       }
     } catch (err) {
-      // Fallback endpoint retry
-      try {
-        await fetch(CLOUD_SYNC_CONFIG.FALLBACK_ENDPOINT, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        this.cloudConnected = true;
-        this.updateSyncBadgeUI(true);
-      } catch (fallbackErr) {
-        // Keep working with local storage if offline
-        this.cloudConnected = false;
-        this.updateSyncBadgeUI(false);
-      }
+      console.warn('Cloud sync push error:', err);
+      this.cloudConnected = false;
+      this.updateSyncBadgeUI(false);
     } finally {
       this.isSyncing = false;
     }
   }
 
-  // Pull remote state from Cloud Realtime DB and merge if newer
+  // Pull remote state from Cloud Realtime and merge if newer
   async pullFromCloud() {
-    if (!CLOUD_SYNC_CONFIG.ENABLED || this.isSyncing) return;
+    if (!CLOUD_SYNC_CONFIG.ENABLED) return;
 
     try {
-      const res = await fetch(CLOUD_SYNC_CONFIG.ENDPOINT + '?t=' + Date.now());
+      const res = await fetch(CLOUD_SYNC_CONFIG.POLL_URL + '&t=' + Date.now());
       if (!res.ok) return;
 
-      const remoteData = await res.json();
-      if (!remoteData || !remoteData.timestamp) return;
+      const lines = (await res.text()).trim().split('\n');
+      if (!lines || lines.length === 0) return;
 
-      this.cloudConnected = true;
-      this.updateSyncBadgeUI(true);
-
-      // Only merge if remote data is newer than what we last recorded locally
-      if (remoteData.timestamp > this.lastKnownTimestamp) {
-        this.lastKnownTimestamp = remoteData.timestamp;
-
-        if (remoteData.cards) {
-          localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(remoteData.cards));
-        }
-        if (remoteData.monthlyShipped !== undefined) {
-          localStorage.setItem(ZLINK_MONTHLY_KEY, remoteData.monthlyShipped.toString());
-        }
-        if (remoteData.monthlyHistory) {
-          localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(remoteData.monthlyHistory));
-        }
-        if (remoteData.projectStatus) {
-          localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(remoteData.projectStatus));
-        }
-        if (remoteData.auditLogs) {
-          localStorage.setItem(ZLINK_AUDIT_KEY, JSON.stringify(remoteData.auditLogs));
-        }
-        if (remoteData.cycleLogs) {
-          localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(remoteData.cycleLogs));
-        }
-
-        // Notify local UI listeners to re-render
-        this.listeners.forEach(cb => {
-          try {
-            cb(remoteData);
-          } catch (e) {
-            console.error('Remote sync callback error:', e);
+      // Parse newest message
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i];
+        if (!line) continue;
+        try {
+          const msgObj = JSON.parse(line);
+          if (msgObj.event === 'message' && msgObj.message) {
+            const payload = JSON.parse(msgObj.message);
+            this.handleIncomingCloudPayload(payload);
+            break;
           }
-        });
+        } catch (e) {
+          // Continue searching
+        }
       }
     } catch (err) {
       // Offline fallback
-      this.cloudConnected = false;
-      this.updateSyncBadgeUI(false);
+    }
+  }
+
+  // Process and apply incoming cloud payload
+  handleIncomingCloudPayload(remoteData) {
+    if (!remoteData || !remoteData.timestamp) return;
+
+    this.cloudConnected = true;
+    this.updateSyncBadgeUI(true);
+
+    // Only merge if remote data is newer than what we recorded locally
+    if (remoteData.timestamp > this.lastKnownTimestamp) {
+      this.lastKnownTimestamp = remoteData.timestamp;
+
+      if (remoteData.cards) {
+        localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(remoteData.cards));
+      }
+      if (remoteData.monthlyShipped !== undefined) {
+        localStorage.setItem(ZLINK_MONTHLY_KEY, remoteData.monthlyShipped.toString());
+      }
+      if (remoteData.monthlyHistory) {
+        localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(remoteData.monthlyHistory));
+      }
+      if (remoteData.projectStatus) {
+        localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(remoteData.projectStatus));
+      }
+      if (remoteData.auditLogs) {
+        localStorage.setItem(ZLINK_AUDIT_KEY, JSON.stringify(remoteData.auditLogs));
+      }
+      if (remoteData.cycleLogs) {
+        localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(remoteData.cycleLogs));
+      }
+
+      // Notify local UI listeners to re-render instantly
+      this.listeners.forEach(cb => {
+        try {
+          cb(remoteData);
+        } catch (e) {
+          console.error('Remote sync callback error:', e);
+        }
+      });
     }
   }
 

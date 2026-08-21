@@ -88,8 +88,21 @@ async function initCarousel() {
 
   if (frameZLink) {
     if (!frameZLink.getAttribute('src')) {
-      frameZLink.src = 'index.html';
+      frameZLink.src = 'index.html?v=20260821_v4';
     }
+  }
+
+  // Subscribe to realtime state in parent window and broadcast into iframe
+  if (window.zlinkState) {
+    window.zlinkState.onStateChange((data) => {
+      if (frameZLink && frameZLink.contentWindow) {
+        try {
+          frameZLink.contentWindow.postMessage({ type: 'ZLINK_STATE_UPDATE', payload: data }, '*');
+        } catch (e) {
+          // ignore cross-frame errors
+        }
+      }
+    });
   }
 
   // Calculate initial dynamic duration
@@ -152,6 +165,18 @@ async function switchFrame(index) {
     if (frameZLink) {
       frameZLink.classList.add('active');
       frameZLink.style.display = 'block';
+
+      // Pull freshest state from cloud immediately upon switching to Z-Link
+      if (window.zlinkState) {
+        window.zlinkState.pullFromCloud();
+      }
+      try {
+        if (frameZLink.contentWindow && frameZLink.contentWindow.zlinkState) {
+          frameZLink.contentWindow.zlinkState.pullFromCloud();
+        }
+      } catch (e) {
+        // safety
+      }
     }
     if (frameDaily) {
       frameDaily.classList.remove('active');

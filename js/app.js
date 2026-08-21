@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Listen to parent frame message (from tv-carousel.html)
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'ZLINK_STATE_UPDATE') {
+      renderDashboard();
+    } else if (event.data && event.data.type === 'FORCE_ZLINK_SYNC') {
+      if (window.zlinkState) window.zlinkState.pullFromCloud();
+    }
+  });
 });
 
 // Live Clock Update
