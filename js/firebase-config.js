@@ -640,9 +640,11 @@ class ZLinkStateEngine {
   initCloudSync() {
     if (!CLOUD_SYNC_CONFIG.ENABLED) return;
 
-    // Detect if running on Assembly Portal Local Server (e.g. localhost:3000 or 192.168.x.x:3000)
-    const isLocalServer = window.location.origin.includes('3000') || window.location.origin.includes('8080');
-    this.localApiBase = isLocalServer ? window.location.origin + '/api/zlink' : null;
+    // Detect Local Server or direct local IP (192.168.1.65:3000)
+    const isLocalOrigin = window.location.origin.includes('3000') || window.location.origin.includes('8080') || window.location.origin.includes('localhost') || window.location.origin.includes('192.168.');
+    this.localApiBase = isLocalOrigin 
+      ? window.location.origin + '/api/zlink' 
+      : 'http://192.168.1.65:3000/api/zlink';
 
     // 1. Initial pull on startup
     this.pullFromCloud();
