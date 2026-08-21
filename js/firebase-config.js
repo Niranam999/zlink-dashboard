@@ -632,15 +632,24 @@ class ZLinkStateEngine {
     this.pushToCloud(payload);
   }
 
-  // Initialize Cloud Realtime Synchronization Engine
+  // Initialize Synchronization Engine (Local Server + Cloud Channels)
   initCloudSync() {
     if (!CLOUD_SYNC_CONFIG.ENABLED) return;
 
-    // 1. Initial pull from cloud on startup
+    // Detect if running on Assembly Portal Local Server (e.g. localhost:3000 or 192.168.x.x:3000)
+    const isLocalServer = window.location.origin.includes('3000') || window.location.origin.includes('8080');
+    this.localApiBase = isLocalServer ? window.location.origin + '/api/zlink' : null;
+
+    // 1. Initial pull on startup
     this.pullFromCloud();
 
-    // 2. Connect to Live Server-Sent Events (SSE) stream for instant updates (< 0.2s)
-    if ('EventSource' in window) {
+    // 2. Continuous high-speed sync interval (every 1.2 seconds)
+    setInterval(() => {
+      this.pullFromCloud();
+    }, 1200);
+
+    // 3. Connect to Live Server-Sent Events (SSE) stream if available
+    if ('EventSource' in window && !isLocalServer) {
       try {
         this.eventSource = new EventSource(CLOUD_SYNC_CONFIG.SSE_URL);
         this.eventSource.onopen = () => {
@@ -656,30 +665,33 @@ class ZLinkStateEngine {
               this.handleIncomingCloudPayload(payload);
             }
           } catch (err) {
-            // Ignore parse errors on ping/keepalive
+            // Ignore parse errors on ping
           }
         };
-        this.eventSource.onerror = () => {
-          this.cloudConnected = false;
-          this.updateSyncBadgeUI(false);
-        };
       } catch (e) {
-        console.warn('EventSource initialization failed, fallback to polling:', e);
+        // fallback to polling
       }
     }
-
-    // 3. Fallback background sync interval (checks every 3s)
-    setInterval(() => {
-      this.pullFromCloud();
-    }, CLOUD_SYNC_CONFIG.POLL_INTERVAL_MS);
   }
 
-  // Push local state to Cloud Realtime Pub/Sub
+  // Push local state to Local Server & Cloud
   async pushToCloud(payload) {
-    if (!CLOUD_SYNC_CONFIG.ENABLED || this.isSyncing) return;
+    if (this.isSyncing) return;
     this.isSyncing = true;
 
     try {
+      // 1. If Local Server is present, push directly to Local Server (0ms)
+      if (this.localApiBase) {
+        await fetch(this.localApiBase + '/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        this.cloudConnected = true;
+        this.updateSyncBadgeUI(true);
+      }
+
+      // 2. Push to Cloud Channel
       const payloadString = JSON.stringify(payload);
       const res = await fetch(CLOUD_SYNC_CONFIG.PUB_URL, {
         method: 'POST',
@@ -694,26 +706,34 @@ class ZLinkStateEngine {
         this.updateSyncBadgeUI(true);
       }
     } catch (err) {
-      console.warn('Cloud sync push error:', err);
-      this.cloudConnected = false;
-      this.updateSyncBadgeUI(false);
+      console.warn('Sync push notice:', err);
     } finally {
       this.isSyncing = false;
     }
   }
 
-  // Pull remote state from Cloud Realtime and merge if newer
+  // Pull remote state from Local Server or Cloud
   async pullFromCloud() {
-    if (!CLOUD_SYNC_CONFIG.ENABLED) return;
-
     try {
-      const res = await fetch(CLOUD_SYNC_CONFIG.POLL_URL + '&t=' + Date.now());
+      // 1. Try Local Server first if available
+      if (this.localApiBase) {
+        const res = await fetch(this.localApiBase + '/state?t=' + Date.now());
+        if (res.ok) {
+          const remoteData = await res.json();
+          if (remoteData && remoteData.timestamp) {
+            this.handleIncomingCloudPayload(remoteData);
+            return;
+          }
+        }
+      }
+
+      // 2. Pull from Cloud Channel
+      const res = await fetch(CLOUD_SYNC_CONFIG.POLL_URL + '&t=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) return;
 
       const lines = (await res.text()).trim().split('\n');
       if (!lines || lines.length === 0) return;
 
-      // Parse newest message
       for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i];
         if (!line) continue;
@@ -725,7 +745,7 @@ class ZLinkStateEngine {
             break;
           }
         } catch (e) {
-          // Continue searching
+          // continue
         }
       }
     } catch (err) {
