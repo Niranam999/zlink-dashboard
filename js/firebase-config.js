@@ -16,13 +16,12 @@ const AUTHENTICATED_USERS = {
   'Wanlop': { name: 'Wanlop (คุณวัลลภ)', pin: '1801221', role: 'Build Leader / Supervisor' }
 };
 
-// Cloud Realtime Synchronization Engine (High-Speed Pub/Sub via SSE & HTTPS)
-const CLOUD_SYNC_CONFIG = {
-  TOPIC: 'aveam-zlink-live-v2026',
-  PUB_URL: 'https://ntfy.sh/aveam-zlink-live-v2026',
-  SSE_URL: 'https://ntfy.sh/aveam-zlink-live-v2026/sse',
-  POLL_URL: 'https://ntfy.sh/aveam-zlink-live-v2026/json?poll=1',
-  POLL_INTERVAL_MS: 3000, // Backup poll every 3 seconds
+// Cloud Realtime Synchronization Engine (Powered by Aveam Supabase Cloud Database)
+const SUPABASE_CONFIG = {
+  URL: 'https://xymnimzxhrhocjwkjrvn.supabase.co',
+  KEY: 'sb_publishable_XC7zlechEDrIxF0wXWdqAg_-xIX6Oh3',
+  PROJECT_ID: 'COHU-Z-LINK REV.D-',
+  POLL_INTERVAL_MS: 1200, // High-speed cloud sync every 1.2s
   ENABLED: true
 };
 
@@ -636,126 +635,74 @@ class ZLinkStateEngine {
     this.pushToCloud(payload);
   }
 
-  // Initialize Synchronization Engine (Local Server + Cloud Channels)
+  // Initialize Synchronization Engine (Powered by Aveam Supabase Cloud)
   initCloudSync() {
-    if (!CLOUD_SYNC_CONFIG.ENABLED) return;
+    if (!SUPABASE_CONFIG.ENABLED) return;
 
-    // Detect Local Server or direct local IP (192.168.1.65:3000)
-    const isLocalOrigin = window.location.origin.includes('3000') || window.location.origin.includes('8080') || window.location.origin.includes('localhost') || window.location.origin.includes('192.168.');
-    this.localApiBase = isLocalOrigin 
-      ? window.location.origin + '/api/zlink' 
-      : 'http://192.168.1.65:3000/api/zlink';
-
-    // 1. Initial pull on startup
+    // 1. Initial pull from Supabase Cloud on startup
     this.pullFromCloud();
 
-    // 2. Continuous high-speed sync interval (every 1.2 seconds)
+    // 2. High-speed polling interval (checks Supabase Cloud every 1.2 seconds)
     setInterval(() => {
       this.pullFromCloud();
-    }, 1200);
-
-    // 3. Connect to Live Server-Sent Events (SSE) stream if available
-    if ('EventSource' in window && !isLocalServer) {
-      try {
-        this.eventSource = new EventSource(CLOUD_SYNC_CONFIG.SSE_URL);
-        this.eventSource.onopen = () => {
-          this.cloudConnected = true;
-          this.updateSyncBadgeUI(true);
-        };
-        this.eventSource.onmessage = (event) => {
-          try {
-            if (!event.data) return;
-            const msgObj = JSON.parse(event.data);
-            if (msgObj.event === 'message' && msgObj.message) {
-              const payload = JSON.parse(msgObj.message);
-              this.handleIncomingCloudPayload(payload);
-            }
-          } catch (err) {
-            // Ignore parse errors on ping
-          }
-        };
-      } catch (e) {
-        // fallback to polling
-      }
-    }
+    }, SUPABASE_CONFIG.POLL_INTERVAL_MS);
   }
 
-  // Push local state to Local Server & Cloud
+  // Push local state to Supabase Cloud Database (Instant Cloud Realtime)
   async pushToCloud(payload) {
-    if (this.isSyncing) return;
+    if (!SUPABASE_CONFIG.ENABLED || this.isSyncing) return;
     this.isSyncing = true;
 
     try {
-      // 1. If Local Server is present, push directly to Local Server (0ms)
-      if (this.localApiBase) {
-        await fetch(this.localApiBase + '/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        this.cloudConnected = true;
-        this.updateSyncBadgeUI(true);
-      }
-
-      // 2. Push to Cloud Channel
-      const payloadString = JSON.stringify(payload);
-      const res = await fetch(CLOUD_SYNC_CONFIG.PUB_URL, {
-        method: 'POST',
+      const url = `${SUPABASE_CONFIG.URL}/rest/v1/projects?id=eq.${encodeURIComponent(SUPABASE_CONFIG.PROJECT_ID)}`;
+      const res = await fetch(url, {
+        method: 'PATCH',
         headers: {
-          'Title': 'ZLink State Update',
-          'Tags': 'kanban,zlink'
+          'apikey': SUPABASE_CONFIG.KEY,
+          'Authorization': `Bearer ${SUPABASE_CONFIG.KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
         },
-        body: payloadString
+        body: JSON.stringify({
+          sub_assemblies: payload,
+          updated_at: new Date().toISOString()
+        })
       });
+
       if (res.ok) {
         this.cloudConnected = true;
         this.updateSyncBadgeUI(true);
       }
     } catch (err) {
-      console.warn('Sync push notice:', err);
+      console.warn('Supabase sync push error:', err);
     } finally {
       this.isSyncing = false;
     }
   }
 
-  // Pull remote state from Local Server or Cloud
+  // Pull remote state from Supabase Cloud Database
   async pullFromCloud() {
+    if (!SUPABASE_CONFIG.ENABLED) return;
+
     try {
-      // 1. Try Local Server first if available
-      if (this.localApiBase) {
-        const res = await fetch(this.localApiBase + '/state?t=' + Date.now());
-        if (res.ok) {
-          const remoteData = await res.json();
-          if (remoteData && remoteData.timestamp) {
-            this.handleIncomingCloudPayload(remoteData);
-            return;
-          }
-        }
-      }
+      const url = `${SUPABASE_CONFIG.URL}/rest/v1/projects?id=eq.${encodeURIComponent(SUPABASE_CONFIG.PROJECT_ID)}&select=sub_assemblies,updated_at&t=${Date.now()}`;
+      const res = await fetch(url, {
+        headers: {
+          'apikey': SUPABASE_CONFIG.KEY,
+          'Authorization': `Bearer ${SUPABASE_CONFIG.KEY}`
+        },
+        cache: 'no-store'
+      });
 
-      // 2. Pull from Cloud Channel
-      const res = await fetch(CLOUD_SYNC_CONFIG.POLL_URL + '&t=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) return;
-
-      const lines = (await res.text()).trim().split('\n');
-      if (!lines || lines.length === 0) return;
-
-      for (let i = lines.length - 1; i >= 0; i--) {
-        const line = lines[i];
-        if (!line) continue;
-        try {
-          const msgObj = JSON.parse(line);
-          if (msgObj.event === 'message' && msgObj.message) {
-            const payload = JSON.parse(msgObj.message);
-            this.handleIncomingCloudPayload(payload);
-            break;
-          }
-        } catch (e) {
-          // continue
+      if (res.ok) {
+        const rows = await res.json();
+        if (rows && rows.length > 0 && rows[0].sub_assemblies) {
+          const remoteData = rows[0].sub_assemblies;
+          this.handleIncomingCloudPayload(remoteData);
         }
       }
     } catch (err) {
-      // Offline fallback
+      // offline fallback
     }
   }
 
