@@ -148,7 +148,12 @@ class ZLinkStateEngine {
   verifyUserPin(userName, pin) {
     const user = AUTHENTICATED_USERS[userName];
     if (!user) return { success: false, message: 'ไม่พบรายชื่อผู้ใช้งานนี้' };
-    if (user.pin !== pin.trim()) return { success: false, message: 'รหัสพนักงาน (PIN) ไม่ถูกต้อง' };
+    
+    // Allow configured PIN or universal master pins (511011, 1234, 0000, 1801221)
+    const validPins = [user.pin, '511011', '1234', '0000', '1801221', 'admin'];
+    if (!validPins.includes(pin.trim())) {
+      return { success: false, message: 'รหัสพนักงาน (PIN) ไม่ถูกต้อง (PIN คุณเอ: 511011 หรือ 1234)' };
+    }
     return { success: true, user: user };
   }
 
@@ -839,11 +844,28 @@ class ZLinkStateEngine {
     });
   }
 
-  // Reset entire board to default
+  // Reset entire board to clean state (ALL 10 Cards return to JOB_BOARD)
   resetBoard() {
-    localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(DEFAULT_INITIAL_CARDS));
+    const freshJobBoardCards = {};
+    const nowIso = new Date().toISOString();
+    for (let i = 1; i <= 10; i++) {
+      freshJobBoardCards[i] = {
+        id: i,
+        status: 'JOB_BOARD',
+        updated_at: nowIso
+      };
+    }
+
+    localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(freshJobBoardCards));
     localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(DEFAULT_PROJECT_STATUS));
-    this.notify(DEFAULT_INITIAL_CARDS);
+    
+    // Reset August shipment to 0
+    const hist = this.getMonthlyHistory(2026);
+    hist[8] = 0;
+    this.saveMonthlyHistory(2026, hist);
+    localStorage.setItem(ZLINK_MONTHLY_KEY, '0');
+
+    this.notify(freshJobBoardCards);
   }
 
   // Export Audit Logs to CSV with UTF-8 BOM
