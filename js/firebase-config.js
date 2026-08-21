@@ -708,14 +708,16 @@ class ZLinkStateEngine {
 
   // Process and apply incoming cloud payload
   handleIncomingCloudPayload(remoteData) {
-    if (!remoteData || !remoteData.timestamp) return;
+    if (!remoteData || !remoteData.cards) return;
 
     this.cloudConnected = true;
     this.updateSyncBadgeUI(true);
 
-    // Only merge if remote data is newer than what we recorded locally
-    if (remoteData.timestamp > this.lastKnownTimestamp) {
-      this.lastKnownTimestamp = remoteData.timestamp;
+    const remoteTimestamp = remoteData.timestamp || 1;
+
+    // Apply remote state if timestamp is newer or different from last applied
+    if (remoteTimestamp !== this.lastKnownTimestamp) {
+      this.lastKnownTimestamp = remoteTimestamp;
 
       if (remoteData.cards) {
         localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(remoteData.cards));
