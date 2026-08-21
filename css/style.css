@@ -1645,4 +1645,30 @@ body.theme-sakura-pink footer a {
   font-weight: 700;
 }
 
+/* Quick Mobile Reset Button */
+.btn-mobile-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-mobile-reset:hover {
+  background: rgba(245, 158, 11, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-mobile-reset:active {
+  transform: scale(0.96);
+}
+
 

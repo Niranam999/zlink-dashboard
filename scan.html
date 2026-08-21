@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Z-Link Mobile Card Scanner | Aveam</title>
-  <link rel="stylesheet" href="css/style.css?v=20260821_v3">
+  <link rel="stylesheet" href="css/style.css?v=20260821_v8">
 </head>
 <body class="theme-sakura-pink">
 
@@ -14,9 +14,14 @@
     <header class="mobile-header">
       <div class="mobile-header-top">
         <div class="brand-logo-badge" style="margin-bottom: 0;">🌸 AVEAM MOBILE</div>
-        <button class="btn-mobile-exit" onclick="handleExitApp()" title="ออกจากแอป / ปิดหน้าต่าง">
-          <span>✖</span> <span>Exit</span>
-        </button>
+        <div style="display: flex; gap: 0.4rem; align-items: center;">
+          <button class="btn-mobile-reset" onclick="handleMobileResetBoard()" title="รีเซ็ตการ์ดทั้งหมดกลับสู่สถานะรอประกอบ">
+            <span>🔄</span> <span>Reset</span>
+          </button>
+          <button class="btn-mobile-exit" onclick="handleExitApp()" title="ออกจากแอป / ปิดหน้าต่าง">
+            <span>✖</span> <span>Exit</span>
+          </button>
+        </div>
       </div>
 
       <div class="cloud-sync-status">
@@ -123,7 +128,7 @@
   </div>
 
   <!-- JAVASCRIPT SCRIPTS -->
-  <script src="js/firebase-config.js?v=20260821_v6"></script>
-  <script src="js/scan.js?v=20260821_v6"></script>
+  <script src="js/firebase-config.js?v=20260821_v8"></script>
+  <script src="js/scan.js?v=20260821_v8"></script>
 </body>
 </html>

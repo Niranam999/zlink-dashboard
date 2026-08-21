@@ -26,19 +26,18 @@ const CLOUD_SYNC_CONFIG = {
   ENABLED: true
 };
 
-// Initial state for 10 Kanban Cards (#1 to #10) for August 2026
-// #1-#2: WIP Assembly, #3-#8: Job Board, #9-#10: FG Shelf
+// Initial clean state for 10 Kanban Cards (#1 to #10) - All ready at JOB_BOARD
 const DEFAULT_INITIAL_CARDS = {
-  1: { id: 1, status: 'WIP_ASSEMBLY', wip_start_time: new Date(Date.now() - 3600000 * 2.5).toISOString(), updated_at: new Date().toISOString() },
-  2: { id: 2, status: 'WIP_ASSEMBLY', wip_start_time: new Date(Date.now() - 3600000 * 1.8).toISOString(), updated_at: new Date().toISOString() },
+  1: { id: 1, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  2: { id: 2, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   3: { id: 3, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   4: { id: 4, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   5: { id: 5, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   6: { id: 6, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   7: { id: 7, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   8: { id: 8, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
-  9: { id: 9, status: 'FG_SHELF', updated_at: new Date().toISOString() },
-  10: { id: 10, status: 'FG_SHELF', updated_at: new Date().toISOString() }
+  9: { id: 9, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  10: { id: 10, status: 'JOB_BOARD', updated_at: new Date().toISOString() }
 };
 
 // Seed baseline cycle logs for standard time demonstration (Target: 12.0 Hours / Box)
@@ -112,16 +111,16 @@ class ZLinkStateEngine {
   }
 
   initStorage() {
-    const ZLINK_VERSION_KEY = 'zlink_data_version_aug2026_v7';
+    const ZLINK_VERSION_KEY = 'zlink_data_version_aug2026_v8';
     
     // Auto-migrate storage if version key is not present or outdated
-    if (localStorage.getItem(ZLINK_VERSION_KEY) !== 'v7') {
+    if (localStorage.getItem(ZLINK_VERSION_KEY) !== 'v8') {
       localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(DEFAULT_INITIAL_CARDS));
       localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(DEFAULT_MONTHLY_HISTORY));
       localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(DEFAULT_INITIAL_CYCLE_LOGS));
       localStorage.setItem(ZLINK_MONTHLY_KEY, '0');
       localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(DEFAULT_PROJECT_STATUS));
-      localStorage.setItem(ZLINK_VERSION_KEY, 'v7');
+      localStorage.setItem(ZLINK_VERSION_KEY, 'v8');
     }
 
     if (!localStorage.getItem(ZLINK_STORAGE_KEY)) {

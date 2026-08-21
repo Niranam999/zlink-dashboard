@@ -350,10 +350,8 @@ function closeExitModal() {
 
 function confirmExitApp() {
   closeExitModal();
-  // Attempt to close window (works if opened via window.open / webapp)
   window.close();
 
-  // If window.close is blocked by browser security (e.g. standard mobile tab), attempt back or provide feedback
   setTimeout(() => {
     try {
       if (window.history.length > 1) {
@@ -365,4 +363,18 @@ function confirmExitApp() {
       showToast('ℹ️ ปิดแท็บนี้บนเบราว์เซอร์ของคุณได้เลยครับ');
     }
   }, 100);
+}
+
+// Reset Board Action for Mobile
+function handleMobileResetBoard() {
+  if (confirm("ยืนยันรีเซ็ตการ์ดทั้งหมด (#1 - #10) กลับสู่สถานะรอประกอบ (Job Board) ใช่หรือไม่?")) {
+    if (window.zlinkState) {
+      window.zlinkState.resetBoard();
+      selectedCardId = 1;
+      pendingNextStatus = null;
+      lastActionState = null;
+      renderMobileUI();
+      showToast("🔄 รีเซ็ตการ์ดทั้งหมดกลับสู่สถานะรอประกอบเรียบร้อย!");
+    }
+  }
 }
