@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-06  
 **Project:** Z-LINK Kanban Realtime Dashboard  
-**Target Standard:** ISO 9001:2015 & IATF 16949 Quality Management System Compliance  
+**Target Standard:** ISO 9001:2015 Quality Management System Compliance  
 
 ---
 
@@ -52,7 +52,7 @@ Access to the Admin Control Panel requires selecting an authorized user profile 
 #### Tab 2: 📋 ประวัติการแก้ไข (Audit Log History)
 - Realtime table rendering the 50 most recent audit log entries.
 - Table Columns: `Timestamp` | `User (ID)` | `Action Type` | `Details (Old ➔ New)` | `Reason & Remarks`.
-- **CSV Export Button (`📥 Export CSV`):** Generates and downloads a complete UTF-8 BOM CSV file of all recorded audit logs for ISO/IATF external audits.
+- **CSV Export Button (`📥 Export CSV`):** Generates and downloads a complete UTF-8 BOM CSV file of all recorded audit logs for ISO 9001 external audits.
 
 ---
 

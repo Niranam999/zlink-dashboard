@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-06  
 **Target Standard Time (ST):** `8.0 Hours / Box` (480 minutes per box)  
-**Standard:** ISO 9001:2015 & IATF 16949 Process Capability, Cycle Time Analysis & Line Balancing  
+**Standard:** ISO 9001:2015 Process Capability, Cycle Time Analysis & Line Balancing  
 
 ---
 

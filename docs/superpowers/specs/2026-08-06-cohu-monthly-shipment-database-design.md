@@ -3,7 +3,7 @@
 **Date:** 2026-08-06  
 **Target Contract Part Number:** `8308859901` (`OPTN,Z-LINKS,4 CHK ASSEMBLES`)  
 **Data Source:** `Cohu_Y2026.xlsx` (Column D: Part Number, Column G: Inv Date, Column J: Shipped Qty)  
-**Standard:** ISO 9001:2015 & IATF 16949 Production Metrics & Traceability  
+**Standard:** ISO 9001:2015 Production Metrics & Traceability  
 
 ---
 
