@@ -66,7 +66,7 @@ function renderDashboard() {
 
   // Update KPI Header Values
   updateKPI('kpiFGCount', `${fgCards.length} / 10`);
-  updateKPI('kpiWIPCount', `${wipCards.length} / 2`);
+  updateKPI('kpiWIPCount', `${wipCards.length} / 10`);
   updateKPI('kpiShippedCount', `${monthlyShipped} กล่อง`);
   updateKPI('kpiYearlyShippedCount', `${yearlyTotalShipped} กล่อง`);
   updateKPI('operatorCount', '2');
@@ -77,7 +77,7 @@ function renderDashboard() {
 
   // Update Column Badges
   updateBadge('badgeJobBoard', jobBoardCards.length);
-  updateBadge('badgeWIP', `${wipCards.length}/2`);
+  updateBadge('badgeWIP', `${wipCards.length}/10`);
   updateBadge('badgeQA', qaCards.length);
   updateBadge('badgeFG', `${fgCards.length}/10`);
   updateBadge('badgeShipped', monthlyShipped);
@@ -236,7 +236,9 @@ function renderCardContainer(containerId, cards, emptyMessage) {
   }
 
   const isJobBoard = (containerId === 'colJobBoard');
-  if (isJobBoard) {
+  const isWIPMulti = (containerId === 'colWIP' && cards.length > 2);
+
+  if (isJobBoard || isWIPMulti) {
     container.className = 'cards-container cards-grid-2col';
     container.innerHTML = cards.map(card => createCardHTML(card, true)).join('');
   } else {

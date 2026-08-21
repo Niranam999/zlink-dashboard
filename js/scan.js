@@ -100,15 +100,15 @@ function renderMobileUI() {
   }
 
   if (actionContainer) {
-    // Check WIP limit rule: max 2 WIP cards concurrent
+    // Check WIP limit rule: max 10 WIP cards concurrent
     const cardsObj = window.zlinkState.getCards();
     const wipCount = Object.values(cardsObj).filter(c => c.status === 'WIP_ASSEMBLY').length;
-    const isWIPLimitReached = (cardData.status === 'JOB_BOARD' && wipCount >= 2);
+    const isWIPLimitReached = (cardData.status === 'JOB_BOARD' && wipCount >= 10);
 
     if (isWIPLimitReached) {
       actionContainer.innerHTML = `
         <button class="btn-action-primary" style="background: #475569; color: #94a3b8; cursor: not-allowed;" disabled>
-          ⚠️ WIP เต็มแล้ว (สูงสุด 2 งาน)
+          ⚠️ WIP เต็มแล้ว (สูงสุด 10 งาน)
         </button>
         <div style="font-size: 0.8rem; color: #fbbf24; text-align: center; margin-top: 0.75rem;">
           กรุณาเคลียร์งานใน WIP ให้เสร็จก่อนหยิบการ์ดใบใหม่
