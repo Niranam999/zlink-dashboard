@@ -149,8 +149,9 @@ function renderShipmentChart() {
     areaD = `${pathD} L ${lastPt.x.toFixed(1)} 58 L ${firstPt.x.toFixed(1)} 58 Z`;
   }
 
-  // Construct SVG Data Circles & Text Labels INSIDE SVG for 100% exact alignment
+  // Construct SVG Data Circles, Value Numbers & Month Labels INSIDE SVG for 100% exact alignment
   let circlesHTML = '';
+  let valueLabelsHTML = '';
   let labelsHTML = '';
 
   points.forEach(p => {
@@ -165,6 +166,13 @@ function renderShipmentChart() {
       circlesHTML += `
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${radius}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${isCurrent ? 2.5 : 0}" />
         ${isCurrent ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2,2" />` : ''}
+      `;
+
+      // Monthly Shipped Quantity Number Label above each point
+      const valColor = isCurrent ? '#fbbf24' : '#e2e8f0';
+      const valY = Math.max(9, p.y - 7.5);
+      valueLabelsHTML += `
+        <text x="${p.x.toFixed(1)}" y="${valY.toFixed(1)}" text-anchor="middle" fill="${valColor}" font-size="11.5" font-weight="800" font-family="Outfit, Prompt, sans-serif" style="text-shadow: 0 1px 3px rgba(0,0,0,0.9);">${p.qty}</text>
       `;
     }
 
@@ -190,6 +198,7 @@ function renderShipmentChart() {
       ${areaD ? `<path d="${areaD}" fill="url(#trendGradient)" />` : ''}
       ${pathD ? `<path d="${pathD}" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />` : ''}
       ${circlesHTML}
+      ${valueLabelsHTML}
       ${labelsHTML}
     </svg>
   `;
