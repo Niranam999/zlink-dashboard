@@ -88,7 +88,7 @@ async function initCarousel() {
 
   if (frameZLink) {
     if (!frameZLink.getAttribute('src')) {
-      frameZLink.src = 'index.html?v=20260821_v4';
+      frameZLink.src = 'index.html?v=20260828_v2&tv=true';
     }
   }
 
@@ -104,6 +104,11 @@ async function initCarousel() {
       }
     });
   }
+
+  // Auto-reload whole TV page every 30 minutes to purge memory & prevent TV browser stale caching
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 30 * 60 * 1000);
 
   // Calculate initial dynamic duration
   await switchFrame(0);
