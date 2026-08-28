@@ -666,15 +666,21 @@ class ZLinkStateEngine {
         body: JSON.stringify({
           sub_assemblies: payload,
           updated_at: new Date().toISOString()
-        })
+        }),
+        keepalive: true
       });
 
       if (res.ok) {
         this.cloudConnected = true;
         this.updateSyncBadgeUI(true);
+      } else {
+        this.cloudConnected = false;
+        this.updateSyncBadgeUI(false);
       }
     } catch (err) {
       console.warn('Supabase sync push error:', err);
+      this.cloudConnected = false;
+      this.updateSyncBadgeUI(false);
     } finally {
       this.isSyncing = false;
     }
@@ -685,7 +691,7 @@ class ZLinkStateEngine {
     if (!SUPABASE_CONFIG.ENABLED) return;
 
     try {
-      const url = `${SUPABASE_CONFIG.URL}/rest/v1/projects?id=eq.${encodeURIComponent(SUPABASE_CONFIG.PROJECT_ID)}&select=sub_assemblies,updated_at&t=${Date.now()}`;
+      const url = `${SUPABASE_CONFIG.URL}/rest/v1/projects?id=eq.${encodeURIComponent(SUPABASE_CONFIG.PROJECT_ID)}&select=sub_assemblies,updated_at`;
       const res = await fetch(url, {
         headers: {
           'apikey': SUPABASE_CONFIG.KEY,
@@ -700,9 +706,14 @@ class ZLinkStateEngine {
           const remoteData = rows[0].sub_assemblies;
           this.handleIncomingCloudPayload(remoteData);
         }
+      } else {
+        this.cloudConnected = false;
+        this.updateSyncBadgeUI(false);
       }
     } catch (err) {
-      // offline fallback
+      console.warn('Supabase sync pull error:', err);
+      this.cloudConnected = false;
+      this.updateSyncBadgeUI(false);
     }
   }
 
@@ -891,11 +902,6 @@ class ZLinkStateEngine {
     document.body.removeChild(link);
   }
 }
-
-// Global instance
-window.zlinkState = new ZLinkStateEngine();
-
-
 
 // Global instance
 window.zlinkState = new ZLinkStateEngine();
