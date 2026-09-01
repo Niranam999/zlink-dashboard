@@ -88,7 +88,7 @@ async function initCarousel() {
 
   if (frameZLink) {
     if (!frameZLink.getAttribute('src')) {
-      frameZLink.src = 'index.html?v=20260828_v2&tv=true';
+      frameZLink.src = 'index.html?v=20260901_v1&tv=true';
     }
   }
 
