@@ -155,13 +155,10 @@ async function switchFrame(index) {
   if (index === 0) {
     await recalculateDailyReportDuration();
     if (frameDaily) {
-      frameDaily.removeAttribute('srcdoc');
       frameDaily.classList.add('active');
-      frameDaily.style.display = 'block';
     }
     if (frameZLink) {
       frameZLink.classList.remove('active');
-      frameZLink.style.display = 'none';
     }
   } else {
     currentTotalDuration = CONFIG.ZLINK_DURATION;
@@ -169,15 +166,14 @@ async function switchFrame(index) {
 
     if (frameZLink) {
       frameZLink.classList.add('active');
-      frameZLink.style.display = 'block';
 
       // Pull freshest state from cloud immediately upon switching to Z-Link
       if (window.zlinkState) {
         window.zlinkState.pullFromCloud();
       }
       try {
-        if (frameZLink.contentWindow && frameZLink.contentWindow.zlinkState) {
-          frameZLink.contentWindow.zlinkState.pullFromCloud();
+        if (frameZLink.contentWindow) {
+          frameZLink.contentWindow.postMessage({ type: 'FORCE_ZLINK_SYNC' }, '*');
         }
       } catch (e) {
         // safety
@@ -185,7 +181,6 @@ async function switchFrame(index) {
     }
     if (frameDaily) {
       frameDaily.classList.remove('active');
-      frameDaily.style.display = 'none';
     }
   }
 }

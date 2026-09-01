@@ -20,9 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen to parent frame message (from tv-carousel.html)
   window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'ZLINK_STATE_UPDATE') {
+      if (event.data.payload && window.zlinkState) {
+        window.zlinkState.handleIncomingCloudPayload(event.data.payload);
+      }
       renderDashboard();
     } else if (event.data && event.data.type === 'FORCE_ZLINK_SYNC') {
-      if (window.zlinkState) window.zlinkState.pullFromCloud();
+      if (window.zlinkState) {
+        window.zlinkState.pullFromCloud();
+      }
+      renderDashboard();
     }
   });
 });

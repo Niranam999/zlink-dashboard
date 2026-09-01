@@ -44,11 +44,16 @@
       width: 1920px;
       height: 1080px;
       border: none;
-      display: none;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
       z-index: 2;
+      transition: opacity 0.25s ease;
     }
     .carousel-frame.active {
-      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
       z-index: 10;
     }
     .carousel-progress-bar {
@@ -87,15 +92,16 @@
       <iframe 
         id="frameZLink" 
         class="carousel-frame" 
-        src="index.html?v=20260828_v2" 
+        src="index.html?v=20260901_v1" 
         title="Z-Link Realtime Dashboard">
       </iframe>
 
     </div>
   </div>
 
-  <!-- JAVASCRIPT SCRIPTS -->
-  <script src="js/firebase-config.js?v=20260828_v2"></script>
-  <script src="js/tv-carousel.js?v=20260828_v2"></script>
+  <!-- SUPABASE REALTIME SDK & SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/firebase-config.js?v=20260901_v1"></script>
+  <script src="js/tv-carousel.js?v=20260901_v1"></script>
 </body>
 </html>

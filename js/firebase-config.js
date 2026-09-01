@@ -642,10 +642,59 @@ class ZLinkStateEngine {
     // 1. Initial pull from Supabase Cloud on startup
     this.pullFromCloud();
 
-    // 2. High-speed polling interval (checks Supabase Cloud every 1.2 seconds)
+    // 2. Setup Supabase Realtime WebSocket channel (Instant 0ms push from Cloud)
+    this.initSupabaseRealtime();
+
+    // 3. Polling interval fallback (checks Supabase Cloud every 2 seconds)
     setInterval(() => {
       this.pullFromCloud();
     }, SUPABASE_CONFIG.POLL_INTERVAL_MS);
+
+    // 4. Auto-pull on window focus / tab visibility change
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.pullFromCloud();
+        }
+      });
+      window.addEventListener('focus', () => {
+        this.pullFromCloud();
+      });
+    }
+  }
+
+  // Initialize Supabase Realtime WebSocket Connection
+  initSupabaseRealtime() {
+    if (typeof supabase !== 'undefined' && SUPABASE_CONFIG.ENABLED) {
+      try {
+        const client = supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.KEY);
+        this.supabaseClient = client;
+        client
+          .channel('zlink-realtime-projects')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'projects',
+              filter: `id=eq.${SUPABASE_CONFIG.PROJECT_ID}`
+            },
+            (payload) => {
+              if (payload.new && payload.new.sub_assemblies) {
+                this.handleIncomingCloudPayload(payload.new.sub_assemblies);
+              }
+            }
+          )
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              this.cloudConnected = true;
+              this.updateSyncBadgeUI(true);
+            }
+          });
+      } catch (err) {
+        console.warn('Supabase Realtime subscription error:', err);
+      }
+    }
   }
 
   // Push local state to Supabase Cloud Database (Instant Cloud Realtime)
