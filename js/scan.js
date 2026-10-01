@@ -247,16 +247,44 @@ function selectCard(num) {
   renderMobileUI();
 }
 
-// Render Quick Card Selection Grid (Buttons 1 to 20)
+// Render Quick Card Selection Grid (Buttons 1 to 20) with live status colors
 function renderQuickSelectorGrid() {
   const container = document.getElementById('cardButtonsGrid');
   if (!container) return;
 
+  const cardsObj = window.zlinkState ? window.zlinkState.getCards() : {};
+
+  const statusClassMap = {
+    JOB_BOARD: 'status-job',
+    WIP_CNC: 'status-cnc',
+    WIP_ASSEMBLY: 'status-assy',
+    QA_PACKING: 'status-qa',
+    FG_SHELF: 'status-fg',
+    SHIPPED: 'status-shipped'
+  };
+
+  const statusTitleMap = {
+    JOB_BOARD: 'Job Board (รอเริ่มงาน)',
+    WIP_CNC: 'WIP CNC (กำลังรัน CNC)',
+    WIP_ASSEMBLY: 'ประกอบงาน (Assembly)',
+    QA_PACKING: 'QA & Packing (ตรวจเช็ค QA)',
+    FG_SHELF: 'ชั้นวาง FG',
+    SHIPPED: 'จัดส่งแล้ว (Shipped)'
+  };
+
   let html = '';
   for (let i = 1; i <= 20; i++) {
+    const card = cardsObj[i] || { status: 'JOB_BOARD' };
+    const status = card.status || 'JOB_BOARD';
+    const statusClass = statusClassMap[status] || 'status-job';
+    const statusLabel = statusTitleMap[status] || status;
     const isActive = (i === selectedCardId);
+
     html += `
-      <button class="btn-card-num ${isActive ? 'active' : ''}" onclick="selectCard(${i})">
+      <button class="btn-card-num ${statusClass} ${isActive ? 'active' : ''}" 
+              onclick="selectCard(${i})" 
+              aria-label="Card #${i} (${statusLabel})"
+              title="Card #${i}: ${statusLabel}">
         #${i}
       </button>
     `;
