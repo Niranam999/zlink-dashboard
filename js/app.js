@@ -104,7 +104,6 @@ function renderDashboard() {
   updateKPI('operatorCount', '2');
 
   // Update Assembly Project Status (RUNNING, ISSUE, NO_PRODUCTION)
-  const projStatus = window.zlinkState.getProjectStatus();
   updateProjectStatusUI(projStatus);
 
   // Update Column Badges
