@@ -7,7 +7,7 @@
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Z-Link Mobile Card Scanner | Aveam</title>
-  <link rel="stylesheet" href="css/style.css?v=20261001_v9">
+  <link rel="stylesheet" href="css/style.css?v=20261001_v10">
 </head>
 <body class="theme-sakura-pink mobile-body">
 
@@ -86,6 +86,67 @@
       </div>
     </section>
 
+    <!-- TEAM OPERATOR STATUS CONTROLLER (สถานะทีมประกอบ) -->
+    <section class="team-status-section">
+      <div class="team-status-title">สถานะทีมประกอบ</div>
+      <div class="team-status-subtitle">อัปเดตจำนวนพนักงานประจำจุดงาน</div>
+
+      <div class="team-stepper-list">
+        <!-- CNC -->
+        <div class="team-stepper-row">
+          <div class="team-role-label">
+            <span class="team-role-icon">⚙️</span>
+            <span>จุดงาน CNC</span>
+          </div>
+          <div class="team-counter-box">
+            <button type="button" class="btn-counter-step" onclick="adjustTeamCount('cnc', -1)" aria-label="ลด CNC">−</button>
+            <input type="number" id="inputTeamCNC" class="team-counter-input" value="2" min="0" max="99" oninput="updateTeamTotal()">
+            <button type="button" class="btn-counter-step" onclick="adjustTeamCount('cnc', 1)" aria-label="เพิ่ม CNC">+</button>
+          </div>
+        </div>
+
+        <!-- Assembly -->
+        <div class="team-stepper-row">
+          <div class="team-role-label">
+            <span class="team-role-icon">🔧</span>
+            <span>ประกอบงาน (Assembly)</span>
+          </div>
+          <div class="team-counter-box">
+            <button type="button" class="btn-counter-step" onclick="adjustTeamCount('assy', -1)" aria-label="ลด Assembly">−</button>
+            <input type="number" id="inputTeamAssy" class="team-counter-input" value="2" min="0" max="99" oninput="updateTeamTotal()">
+            <button type="button" class="btn-counter-step" onclick="adjustTeamCount('assy', 1)" aria-label="เพิ่ม Assembly">+</button>
+          </div>
+        </div>
+
+        <!-- Training / OJT -->
+        <div class="team-stepper-row">
+          <div class="team-role-label">
+            <span class="team-role-icon">🎓</span>
+            <span>ฝึกอบรม (Training / OJT)</span>
+          </div>
+          <div class="team-counter-box">
+            <button type="button" class="btn-counter-step" onclick="adjustTeamCount('ojt', -1)" aria-label="ลด Training">−</button>
+            <input type="number" id="inputTeamOJT" class="team-counter-input" value="2" min="0" max="99" oninput="updateTeamTotal()">
+            <button type="button" class="btn-counter-step" onclick="adjustTeamCount('ojt', 1)" aria-label="เพิ่ม Training">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Summary Row -->
+      <div class="team-total-row">
+        <div class="team-total-label">
+          <span>👥 รวมพนักงานทั้งหมด (Total):</span>
+        </div>
+        <div class="team-total-val" id="teamTotalDisplay">6 คน</div>
+      </div>
+
+      <!-- Save Button inside Card Frame -->
+      <button type="button" class="btn-save-team-status" onclick="saveTeamOperatorStatus()">
+        <span>💾</span>
+        <span>บันทึกสถานะทีมประกอบ (Save)</span>
+      </button>
+    </section>
+
     <!-- FOOTER NAV LINK -->
     <footer style="text-align: center; margin-top: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
       <a href="print-qr.html" target="_blank" style="color: #f472b6; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
@@ -162,7 +223,7 @@
 
   <!-- SUPABASE REALTIME SDK & SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/firebase-config.js?v=20261001_v9"></script>
-  <script src="js/scan.js?v=20261001_v9"></script>
+  <script src="js/firebase-config.js?v=20261001_v10"></script>
+  <script src="js/scan.js?v=20261001_v10"></script>
 </body>
 </html>

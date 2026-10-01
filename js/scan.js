@@ -15,11 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderMobileUI();
+  initTeamOperatorUI();
 
   // Listen for realtime updates from state engine (Cloud / Local)
   if (window.zlinkState) {
     window.zlinkState.onStateChange(() => {
       renderMobileUI();
+      renderTeamOperatorUI();
     });
   }
 });
@@ -454,4 +456,78 @@ function submitAdminResetWithPin() {
   lastActionState = null;
   renderMobileUI();
   showToast('✅ ยืนยันรหัสผ่านสำเร็จ! รีเซ็ตกระดานเรียบร้อยแล้ว');
+}
+
+// ==========================================================================
+// TEAM OPERATOR ALLOCATION CONTROLLER (สถานะทีมประกอบ)
+// ==========================================================================
+
+function initTeamOperatorUI() {
+  renderTeamOperatorUI(true);
+}
+
+function renderTeamOperatorUI(force = false) {
+  const activeInput = document.activeElement;
+  const isEditing = activeInput && (
+    activeInput.id === 'inputTeamCNC' || 
+    activeInput.id === 'inputTeamAssy' || 
+    activeInput.id === 'inputTeamOJT'
+  );
+  if (isEditing && !force) return;
+
+  const counts = (window.zlinkState && window.zlinkState.getOperatorCounts)
+    ? window.zlinkState.getOperatorCounts()
+    : { cnc: 2, assembly: 2, ojt: 2, total: 6 };
+
+  const cncInput = document.getElementById('inputTeamCNC');
+  const assyInput = document.getElementById('inputTeamAssy');
+  const ojtInput = document.getElementById('inputTeamOJT');
+  const totalDisplay = document.getElementById('teamTotalDisplay');
+
+  if (cncInput) cncInput.value = counts.cnc ?? 2;
+  if (assyInput) assyInput.value = counts.assembly ?? 2;
+  if (ojtInput) ojtInput.value = counts.ojt ?? 2;
+  if (totalDisplay) totalDisplay.textContent = `${counts.total ?? (counts.cnc + counts.assembly + counts.ojt)} คน`;
+}
+
+function adjustTeamCount(type, delta) {
+  let elemId = '';
+  if (type === 'cnc') elemId = 'inputTeamCNC';
+  else if (type === 'assy') elemId = 'inputTeamAssy';
+  else if (type === 'ojt') elemId = 'inputTeamOJT';
+  if (!elemId) return;
+
+  const elem = document.getElementById(elemId);
+  if (!elem) return;
+
+  let val = parseInt(elem.value, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, val + delta);
+  elem.value = val;
+  updateTeamTotal();
+}
+
+function updateTeamTotal() {
+  const cnc = parseInt(document.getElementById('inputTeamCNC')?.value, 10) || 0;
+  const assy = parseInt(document.getElementById('inputTeamAssy')?.value, 10) || 0;
+  const ojt = parseInt(document.getElementById('inputTeamOJT')?.value, 10) || 0;
+  const total = cnc + assy + ojt;
+  const totalDisplay = document.getElementById('teamTotalDisplay');
+  if (totalDisplay) {
+    totalDisplay.textContent = `${total} คน`;
+  }
+}
+
+function saveTeamOperatorStatus() {
+  const cnc = parseInt(document.getElementById('inputTeamCNC')?.value, 10) || 0;
+  const assy = parseInt(document.getElementById('inputTeamAssy')?.value, 10) || 0;
+  const ojt = parseInt(document.getElementById('inputTeamOJT')?.value, 10) || 0;
+  const total = cnc + assy + ojt;
+
+  if (window.zlinkState && window.zlinkState.setOperatorCounts) {
+    window.zlinkState.setOperatorCounts({ cnc, assembly: assy, ojt });
+    showToast(`✅ บันทึกสถานะทีมประกอบเรียบร้อย (รวม ${total} คน)`);
+  } else {
+    showToast(`✅ บันทึกสถานะทีมประกอบเรียบร้อย (รวม ${total} คน)`);
+  }
 }
