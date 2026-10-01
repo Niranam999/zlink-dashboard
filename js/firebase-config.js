@@ -21,7 +21,7 @@ const SUPABASE_CONFIG = {
   URL: 'https://xymnimzxhrhocjwkjrvn.supabase.co',
   KEY: 'sb_publishable_XC7zlechEDrIxF0wXWdqAg_-xIX6Oh3',
   PROJECT_ID: 'ZLINK-KANBAN-STATE',
-  POLL_INTERVAL_MS: 5000, // Cloud sync polling fallback every 5s (WebSocket handles 0ms instant push)
+  POLL_INTERVAL_MS: 3000, // Cloud sync polling fallback every 3s (WebSocket handles 0ms instant push)
   ENABLED: true
 };
 
@@ -775,22 +775,42 @@ class ZLinkStateEngine {
     }
   }
 
-  // Push local state to Supabase Cloud Database (Instant Cloud Realtime)
+  // Push local state to Supabase Cloud Database (Instant Cloud Realtime with Auto-Upsert)
   async pushToCloud(payload) {
     if (!SUPABASE_CONFIG.ENABLED || this.isSyncing) return;
     this.isSyncing = true;
 
     try {
-      const url = `${SUPABASE_CONFIG.URL}/rest/v1/projects?id=eq.${encodeURIComponent(SUPABASE_CONFIG.PROJECT_ID)}`;
+      // 1. Try UPSERT via POST with merge-duplicates so record is created if missing
+      const url = `${SUPABASE_CONFIG.URL}/rest/v1/projects`;
       const res = await fetch(url, {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
           'apikey': SUPABASE_CONFIG.KEY,
           'Authorization': `Bearer ${SUPABASE_CONFIG.KEY}`,
           'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
         },
         body: JSON.stringify({
+          id: SUPABASE_CONFIG.PROJECT_ID,
+          customer: 'Cohu',
+          project_code: 'Z-LINK',
+          part_number: '8308859901',
+          description: 'Z-LINK Kanban State',
+          status: 'ontime',
+          job_no: 'ZLINK-KANBAN',
+          mc_number: '-',
+          team_leader: 'Wattana',
+          member_1: 'Wanlop',
+          progress: 0,
+          qty: 20,
+          qty_done: 0,
+          est_hours: 12.0,
+          kanban_backlog: 0,
+          kanban_assigned: 0,
+          kanban_in_progress: 0,
+          kanban_qa: 0,
+          kanban_completed: 0,
           sub_assemblies: payload,
           updated_at: new Date().toISOString()
         }),
@@ -801,8 +821,29 @@ class ZLinkStateEngine {
         this.cloudConnected = true;
         this.updateSyncBadgeUI(true);
       } else {
-        this.cloudConnected = false;
-        this.updateSyncBadgeUI(false);
+        // Fallback to PATCH if POST was rejected
+        const patchUrl = `${SUPABASE_CONFIG.URL}/rest/v1/projects?id=eq.${encodeURIComponent(SUPABASE_CONFIG.PROJECT_ID)}`;
+        const patchRes = await fetch(patchUrl, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_CONFIG.KEY,
+            'Authorization': `Bearer ${SUPABASE_CONFIG.KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            sub_assemblies: payload,
+            updated_at: new Date().toISOString()
+          }),
+          keepalive: true
+        });
+        if (patchRes.ok) {
+          this.cloudConnected = true;
+          this.updateSyncBadgeUI(true);
+        } else {
+          this.cloudConnected = false;
+          this.updateSyncBadgeUI(false);
+        }
       }
     } catch (err) {
       console.warn('Supabase sync push error:', err);
