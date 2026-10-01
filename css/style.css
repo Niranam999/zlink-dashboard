@@ -446,25 +446,37 @@ body.print-page {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  width: 100%;
 }
 
 .card-number-tag {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .card-status-badge {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
-  padding: 0.25rem 0.6rem;
+  text-transform: none;
+  padding: 0.2rem 0.55rem;
   border-radius: 20px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
+  text-align: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #cbd5e1;
 }
 
 .card-body {
@@ -1509,6 +1521,11 @@ body.theme-sakura-pink footer a {
   flex-direction: column;
   gap: 0.3rem;
   padding-right: 0.1rem;
+}
+
+.wip-sub-cards .kanban-card {
+  padding: 0.65rem 0.85rem;
+  border-radius: 11px;
 }
 
 .card-wip-cnc {
