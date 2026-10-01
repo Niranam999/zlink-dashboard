@@ -21,7 +21,7 @@ const SUPABASE_CONFIG = {
   URL: 'https://xymnimzxhrhocjwkjrvn.supabase.co',
   KEY: 'sb_publishable_XC7zlechEDrIxF0wXWdqAg_-xIX6Oh3',
   PROJECT_ID: 'ZLINK-KANBAN-STATE',
-  POLL_INTERVAL_MS: 1200, // High-speed cloud sync every 1.2s
+  POLL_INTERVAL_MS: 5000, // Cloud sync polling fallback every 5s (WebSocket handles 0ms instant push)
   ENABLED: true
 };
 
@@ -829,22 +829,41 @@ class ZLinkStateEngine {
             cards[i] = { id: i, status: 'JOB_BOARD', updated_at: new Date().toISOString() };
           }
         }
-        localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(cards));
+        const currentCardsStr = localStorage.getItem(ZLINK_STORAGE_KEY);
+        const newCardsStr = JSON.stringify(cards);
+        if (currentCardsStr !== newCardsStr) {
+          localStorage.setItem(ZLINK_STORAGE_KEY, newCardsStr);
+        }
       }
       if (remoteData.monthlyShipped !== undefined) {
-        localStorage.setItem(ZLINK_MONTHLY_KEY, remoteData.monthlyShipped.toString());
+        const valStr = remoteData.monthlyShipped.toString();
+        if (localStorage.getItem(ZLINK_MONTHLY_KEY) !== valStr) {
+          localStorage.setItem(ZLINK_MONTHLY_KEY, valStr);
+        }
       }
       if (remoteData.monthlyHistory) {
-        localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(remoteData.monthlyHistory));
+        const histStr = JSON.stringify(remoteData.monthlyHistory);
+        if (localStorage.getItem(ZLINK_MONTHLY_HIST_KEY) !== histStr) {
+          localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, histStr);
+        }
       }
       if (remoteData.projectStatus) {
-        localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(remoteData.projectStatus));
+        const statusStr = JSON.stringify(remoteData.projectStatus);
+        if (localStorage.getItem(ZLINK_STATUS_KEY) !== statusStr) {
+          localStorage.setItem(ZLINK_STATUS_KEY, statusStr);
+        }
       }
       if (remoteData.auditLogs) {
-        localStorage.setItem(ZLINK_AUDIT_KEY, JSON.stringify(remoteData.auditLogs));
+        const auditStr = JSON.stringify(remoteData.auditLogs);
+        if (localStorage.getItem(ZLINK_AUDIT_KEY) !== auditStr) {
+          localStorage.setItem(ZLINK_AUDIT_KEY, auditStr);
+        }
       }
       if (remoteData.cycleLogs) {
-        localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(remoteData.cycleLogs));
+        const cycleStr = JSON.stringify(remoteData.cycleLogs);
+        if (localStorage.getItem(ZLINK_CYCLE_KEY) !== cycleStr) {
+          localStorage.setItem(ZLINK_CYCLE_KEY, cycleStr);
+        }
       }
 
       // Notify local UI listeners to re-render instantly
@@ -858,8 +877,12 @@ class ZLinkStateEngine {
     }
   }
 
-  // Update visual cloud sync indicator if present in DOM
+  // Update visual cloud sync indicator if present in DOM (only when status changes)
   updateSyncBadgeUI(isOnline) {
+    const stateStr = isOnline ? 'online' : 'offline';
+    if (this._lastSyncBadgeState === stateStr) return; // Prevent unnecessary DOM rewrites
+    this._lastSyncBadgeState = stateStr;
+
     const badges = document.querySelectorAll('.cloud-sync-status');
     badges.forEach(badge => {
       if (isOnline) {
@@ -897,7 +920,7 @@ class ZLinkStateEngine {
           yearlyTotalShipped: this.getYearlyTotalShipped(2026),
           monthlyHistory: this.getMonthlyHistory(2026),
           projectStatus: this.getProjectStatus(),
-          timestamp: Date.now()
+          timestamp: this.lastKnownTimestamp
         });
       }
     });

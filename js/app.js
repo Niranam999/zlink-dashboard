@@ -23,12 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (event.data.payload && window.zlinkState) {
         window.zlinkState.handleIncomingCloudPayload(event.data.payload);
       }
-      renderDashboard();
     } else if (event.data && event.data.type === 'FORCE_ZLINK_SYNC') {
       if (window.zlinkState) {
         window.zlinkState.pullFromCloud();
       }
-      renderDashboard();
     }
   });
 });
@@ -56,11 +54,30 @@ function initClock() {
   setInterval(update, 1000);
 }
 
+let lastRenderedStateDigest = '';
+
 // Render Dashboard Columns & KPI Header
 function renderDashboard() {
   const cardsObj = window.zlinkState.getCards();
   const monthlyShipped = window.zlinkState.getMonthlyShipped();
   const yearlyTotalShipped = window.zlinkState.getYearlyTotalShipped(2026);
+  const projStatus = window.zlinkState.getProjectStatus();
+  const monthlyHist = window.zlinkState.getMonthlyHistory(2026);
+
+  // Compute a compact digest of the state to avoid redundant re-renders & flickering
+  const stateDigest = JSON.stringify({
+    cards: cardsObj,
+    monthlyShipped,
+    yearlyTotalShipped,
+    projStatus,
+    monthlyHist
+  });
+
+  if (stateDigest === lastRenderedStateDigest) {
+    return; // State is completely identical, skip DOM operations to eliminate screen flickering
+  }
+  lastRenderedStateDigest = stateDigest;
+
   const cardsList = Object.values(cardsObj);
 
   // Categorize cards by status (Job Board is sorted FIFO by updated_at ascending so newly returned cards go to the end)
@@ -334,7 +351,7 @@ function createCardHTML(card, isCompact = false) {
   `;
 }
 
-// Special 20-Slot Grid View Renderer for Column 4 (FG Shelf)
+// Special 20-Slot Grid View Renderer for Column 4 (FG Shelf: 2 Columns x 10 Rows)
 function renderFGShelfGrid(containerId, activeFGCards) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -346,10 +363,13 @@ function renderFGShelfGrid(containerId, activeFGCards) {
     const isOccupied = fgCardIds.has(slot);
     gridHTML += `
       <div class="fg-slot-cell ${isOccupied ? 'occupied' : ''}">
-        <div class="fg-slot-number">#${slot}</div>
         <div class="fg-box-icon">${isOccupied ? '📦' : '⬜'}</div>
-        <div style="font-size: 0.62rem; font-weight: 700; color: ${isOccupied ? '#34d399' : '#64748b'}; line-height: 1;">
-          ${isOccupied ? `CARD #${slot}` : 'ว่าง'}
+        <div class="fg-slot-details">
+          <div class="fg-slot-header">
+            <span class="fg-slot-number">#${slot}</span>
+            <span class="fg-slot-name">${isOccupied ? `CARD #${slot}` : 'ช่องว่าง'}</span>
+          </div>
+          <div class="fg-slot-status">${isOccupied ? 'พร้อมส่ง (FG)' : 'รอรับงาน'}</div>
         </div>
       </div>
     `;

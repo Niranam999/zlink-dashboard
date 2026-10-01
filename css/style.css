@@ -420,9 +420,8 @@ body.print-page {
   padding: 1rem;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  animation: cardFadeIn 0.4s ease forwards;
 }
 
 .kanban-card:hover {
@@ -515,48 +514,98 @@ body.print-page {
   opacity: 0.8;
 }
 
-/* FG Shelf Slot Grid View (Custom Layout for Column 4: 4 Columns x 5 Rows) */
+/* FG Shelf Slot Grid View (2 Columns x 10 Rows - Full Height Fit) */
+#colFGShelf {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-right: 0;
+}
+
 .fg-shelf-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.28rem;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 0.25rem;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .fg-slot-cell {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px dashed var(--border-glass);
-  border-radius: 8px;
-  padding: 0.25rem 0.12rem;
-  text-align: center;
-  min-height: 40px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 0.2rem 0.4rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+  gap: 0.35rem;
+  min-height: 0;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .fg-slot-cell.occupied {
-  background: var(--color-fg-bg);
-  border: 1px solid var(--color-fg);
-  box-shadow: var(--shadow-glow-green);
-}
-
-.fg-slot-number {
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: var(--text-dim);
-  margin-bottom: 0.04rem;
-  line-height: 1;
-}
-
-.fg-slot-cell.occupied .fg-slot-number {
-  color: var(--color-fg);
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.6);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.15);
 }
 
 .fg-box-icon {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.fg-slot-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+  line-height: 1.15;
+}
+
+.fg-slot-header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fg-slot-number {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.fg-slot-cell.occupied .fg-slot-number {
+  color: #34d399;
+}
+
+.fg-slot-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fg-slot-cell.occupied .fg-slot-name {
+  color: #f1f5f9;
+}
+
+.fg-slot-status {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.fg-slot-cell.occupied .fg-slot-status {
+  color: #34d399;
 }
 
 /* Empty State */
@@ -1721,24 +1770,28 @@ body.theme-sakura-pink footer a {
 }
 
 .tv-embedded .fg-shelf-grid {
-  gap: 0.35rem;
+  gap: 0.3rem;
 }
 
 .tv-embedded .fg-slot-cell {
-  min-height: 48px;
-  padding: 0.3rem 0.2rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 8px;
 }
 
 .tv-embedded .fg-slot-number {
-  font-size: 0.75rem;
-  color: #cbd5e1;
-  font-weight: 700;
-  margin-bottom: 0.1rem;
+  font-size: 0.85rem;
+}
+
+.tv-embedded .fg-slot-name {
+  font-size: 0.78rem;
+}
+
+.tv-embedded .fg-slot-status {
+  font-size: 0.65rem;
 }
 
 .tv-embedded .fg-box-icon {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
 }
 
 /* Quick Mobile Reset Button */
