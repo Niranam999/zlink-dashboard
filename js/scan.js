@@ -471,30 +471,34 @@ function renderTeamOperatorUI(force = false) {
   const isEditing = activeInput && (
     activeInput.id === 'inputTeamCNC' || 
     activeInput.id === 'inputTeamAssy' || 
-    activeInput.id === 'inputTeamOJT'
+    activeInput.id === 'inputTeamOJT_CNC' ||
+    activeInput.id === 'inputTeamOJT_Assy'
   );
   if (isEditing && !force) return;
 
   const counts = (window.zlinkState && window.zlinkState.getOperatorCounts)
     ? window.zlinkState.getOperatorCounts()
-    : { cnc: 2, assembly: 2, ojt: 2, total: 6 };
+    : { cnc: 2, assembly: 2, ojt_cnc: 1, ojt_assembly: 0, ojt: 1, total: 5 };
 
   const cncInput = document.getElementById('inputTeamCNC');
   const assyInput = document.getElementById('inputTeamAssy');
-  const ojtInput = document.getElementById('inputTeamOJT');
+  const ojtCNCInput = document.getElementById('inputTeamOJT_CNC');
+  const ojtAssyInput = document.getElementById('inputTeamOJT_Assy');
   const totalDisplay = document.getElementById('teamTotalDisplay');
 
   if (cncInput) cncInput.value = counts.cnc ?? 2;
   if (assyInput) assyInput.value = counts.assembly ?? 2;
-  if (ojtInput) ojtInput.value = counts.ojt ?? 2;
-  if (totalDisplay) totalDisplay.textContent = `${counts.total ?? (counts.cnc + counts.assembly + counts.ojt)} คน`;
+  if (ojtCNCInput) ojtCNCInput.value = counts.ojt_cnc ?? 1;
+  if (ojtAssyInput) ojtAssyInput.value = counts.ojt_assembly ?? 0;
+  if (totalDisplay) totalDisplay.textContent = `${counts.total ?? 5} คน`;
 }
 
 function adjustTeamCount(type, delta) {
   let elemId = '';
   if (type === 'cnc') elemId = 'inputTeamCNC';
   else if (type === 'assy') elemId = 'inputTeamAssy';
-  else if (type === 'ojt') elemId = 'inputTeamOJT';
+  else if (type === 'ojt_cnc') elemId = 'inputTeamOJT_CNC';
+  else if (type === 'ojt_assy') elemId = 'inputTeamOJT_Assy';
   if (!elemId) return;
 
   const elem = document.getElementById(elemId);
@@ -510,8 +514,9 @@ function adjustTeamCount(type, delta) {
 function updateTeamTotal() {
   const cnc = parseInt(document.getElementById('inputTeamCNC')?.value, 10) || 0;
   const assy = parseInt(document.getElementById('inputTeamAssy')?.value, 10) || 0;
-  const ojt = parseInt(document.getElementById('inputTeamOJT')?.value, 10) || 0;
-  const total = cnc + assy + ojt;
+  const ojt_cnc = parseInt(document.getElementById('inputTeamOJT_CNC')?.value, 10) || 0;
+  const ojt_assy = parseInt(document.getElementById('inputTeamOJT_Assy')?.value, 10) || 0;
+  const total = cnc + assy + ojt_cnc + ojt_assy;
   const totalDisplay = document.getElementById('teamTotalDisplay');
   if (totalDisplay) {
     totalDisplay.textContent = `${total} คน`;
@@ -521,12 +526,14 @@ function updateTeamTotal() {
 function saveTeamOperatorStatus() {
   const cnc = parseInt(document.getElementById('inputTeamCNC')?.value, 10) || 0;
   const assy = parseInt(document.getElementById('inputTeamAssy')?.value, 10) || 0;
-  const ojt = parseInt(document.getElementById('inputTeamOJT')?.value, 10) || 0;
+  const ojt_cnc = parseInt(document.getElementById('inputTeamOJT_CNC')?.value, 10) || 0;
+  const ojt_assy = parseInt(document.getElementById('inputTeamOJT_Assy')?.value, 10) || 0;
+  const ojt = ojt_cnc + ojt_assy;
   const total = cnc + assy + ojt;
 
   if (window.zlinkState && window.zlinkState.setOperatorCounts) {
-    window.zlinkState.setOperatorCounts({ cnc, assembly: assy, ojt });
-    showToast(`✅ บันทึกสถานะทีมประกอบเรียบร้อย (รวม ${total} คน)`);
+    window.zlinkState.setOperatorCounts({ cnc, assembly: assy, ojt_cnc, ojt_assembly: ojt_assy });
+    showToast(`✅ บันทึกสถานะทีมประกอบเรียบร้อย (รวม ${total} คน, OJT ${ojt} คน)`);
   } else {
     showToast(`✅ บันทึกสถานะทีมประกอบเรียบร้อย (รวม ${total} คน)`);
   }

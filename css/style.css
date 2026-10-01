@@ -1413,6 +1413,27 @@ body.theme-sakura-pink footer a {
   text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
+/* OJT / Trainee Stat Styling (Yellow highlight as in user example) */
+.op-stat-ojt .ojt-label {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+.op-stat-ojt .ojt-val {
+  color: #fbbf24;
+  font-size: 1.6rem;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.45);
+}
+
+.op-stat-trainee {
+  color: #fbbf24;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-left: 3px;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.45);
+}
+
 .info-card-subtext {
   font-size: 0.68rem;
   color: var(--text-dim);
@@ -1635,6 +1656,29 @@ body.theme-sakura-pink footer a {
   padding: 0.65rem 0.85rem;
 }
 
+.team-stepper-row-trainee {
+  background: rgba(254, 243, 199, 0.7);
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
+}
+
+.team-stepper-row-trainee .team-role-label {
+  color: #92400e;
+}
+
+.team-stepper-row-trainee .btn-counter-step {
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #b45309;
+}
+
+.team-stepper-row-trainee .btn-counter-step:active {
+  background: rgba(254, 243, 199, 0.95);
+}
+
+.team-stepper-row-trainee .team-counter-input {
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #b45309;
+}
+
 .team-role-label {
   display: flex;
   align-items: center;
@@ -1777,6 +1821,21 @@ body:not(.theme-sakura-pink) .team-counter-input {
   background: #0f172a;
   border-color: #334155;
   color: #38bdf8;
+}
+body:not(.theme-sakura-pink) .team-stepper-row-trainee {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+body:not(.theme-sakura-pink) .team-stepper-row-trainee .team-role-label {
+  color: #fbbf24;
+}
+body:not(.theme-sakura-pink) .team-stepper-row-trainee .btn-counter-step {
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+}
+body:not(.theme-sakura-pink) .team-stepper-row-trainee .team-counter-input {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
 }
 
 /* Issue Modal Overlay */

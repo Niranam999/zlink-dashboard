@@ -319,22 +319,33 @@ class ZLinkStateEngine {
     this.notify();
   }
 
-  // Get Operator Allocation Counts (CNC, Assembly, OJT, Total)
+  // Get Operator Allocation Counts (CNC, Assembly, OJT CNC, OJT Assembly, OJT Total, Overall Total)
   getOperatorCounts() {
     try {
       const data = localStorage.getItem('zlink_operator_counts');
-      if (data) return JSON.parse(data);
+      if (data) {
+        const counts = JSON.parse(data);
+        const cnc = parseInt(counts.cnc || 0, 10);
+        const assembly = parseInt(counts.assembly || 0, 10);
+        const ojt_cnc = parseInt(counts.ojt_cnc ?? (counts.ojt !== undefined ? counts.ojt : 1), 10);
+        const ojt_assembly = parseInt(counts.ojt_assembly || 0, 10);
+        const ojt = ojt_cnc + ojt_assembly;
+        const total = cnc + assembly + ojt;
+        return { cnc, assembly, ojt_cnc, ojt_assembly, ojt, total };
+      }
     } catch (e) {}
-    return { cnc: 2, assembly: 2, ojt: 2, total: 6 };
+    return { cnc: 2, assembly: 2, ojt_cnc: 1, ojt_assembly: 0, ojt: 1, total: 5 };
   }
 
   // Update Operator Allocation Counts
   setOperatorCounts(counts) {
     const cnc = parseInt(counts.cnc || 0, 10);
     const assembly = parseInt(counts.assembly || 0, 10);
-    const ojt = parseInt(counts.ojt || 0, 10);
+    const ojt_cnc = parseInt(counts.ojt_cnc !== undefined ? counts.ojt_cnc : (counts.ojt || 0), 10);
+    const ojt_assembly = parseInt(counts.ojt_assembly || 0, 10);
+    const ojt = ojt_cnc + ojt_assembly;
     const total = cnc + assembly + ojt;
-    const newCounts = { cnc, assembly, ojt, total };
+    const newCounts = { cnc, assembly, ojt_cnc, ojt_assembly, ojt, total };
     localStorage.setItem('zlink_operator_counts', JSON.stringify(newCounts));
     this.notify();
     return newCounts;

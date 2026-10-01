@@ -63,7 +63,7 @@ function renderDashboard() {
   const yearlyTotalShipped = window.zlinkState.getYearlyTotalShipped(2026);
   const projStatus = window.zlinkState.getProjectStatus();
   const monthlyHist = window.zlinkState.getMonthlyHistory(2026);
-  const opCounts = window.zlinkState.getOperatorCounts ? window.zlinkState.getOperatorCounts() : { cnc: 2, assembly: 2, ojt: 2, total: 6 };
+  const opCounts = window.zlinkState.getOperatorCounts ? window.zlinkState.getOperatorCounts() : { cnc: 2, assembly: 2, ojt_cnc: 1, ojt_assembly: 0, ojt: 1, total: 5 };
 
   // Compute a compact digest of the state to avoid redundant re-renders & flickering
   const stateDigest = JSON.stringify({
@@ -106,10 +106,34 @@ function renderDashboard() {
   updateKPI('kpiShippedCount', `${monthlyShipped} กล่อง`);
   updateKPI('kpiYearlyShippedCount', `${yearlyTotalShipped} กล่อง`);
   
-  // Update Operator Matrix (CNC, Assy, OJT, Total)
-  updateKPI('opCountCNC', opCounts.cnc);
-  updateKPI('opCountAssy', opCounts.assembly);
-  updateKPI('opCountOJT', opCounts.ojt);
+  // Update Operator Matrix (CNC, Assy, OJT, Total) with Trainee yellow highlight
+  const ojtCNC = parseInt(opCounts.ojt_cnc || 0, 10);
+  const ojtAssy = parseInt(opCounts.ojt_assembly || 0, 10);
+  const ojtTotal = (opCounts.ojt !== undefined) ? parseInt(opCounts.ojt, 10) : (ojtCNC + ojtAssy);
+
+  const cncElem = document.getElementById('opCountCNC');
+  if (cncElem) {
+    if (ojtCNC > 0) {
+      cncElem.innerHTML = `${opCounts.cnc}<span class="op-stat-trainee">(${ojtCNC})</span>`;
+    } else {
+      cncElem.textContent = opCounts.cnc;
+    }
+  }
+
+  const assyElem = document.getElementById('opCountAssy');
+  if (assyElem) {
+    if (ojtAssy > 0) {
+      assyElem.innerHTML = `${opCounts.assembly}<span class="op-stat-trainee">(${ojtAssy})</span>`;
+    } else {
+      assyElem.textContent = opCounts.assembly;
+    }
+  }
+
+  const ojtElem = document.getElementById('opCountOJT');
+  if (ojtElem) {
+    ojtElem.textContent = ojtTotal;
+  }
+
   updateKPI('opCountTotal', opCounts.total);
 
   // Update Assembly Project Status (RUNNING, ISSUE, NO_PRODUCTION)
