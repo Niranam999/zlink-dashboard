@@ -279,8 +279,8 @@
         color: #000000 !important;
         padding: 0 !important;
         margin: 0 !important;
-        height: 100% !important;
-        overflow: hidden !important;
+        height: auto !important;
+        overflow: visible !important;
       }
 
       .print-control-panel,
@@ -293,11 +293,9 @@
       .printable-cards-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        grid-template-rows: repeat(5, 1fr) !important;
         gap: 3mm 4mm !important;
         width: 100% !important;
-        height: 100% !important;
-        max-height: 288mm !important;
+        height: auto !important;
         box-sizing: border-box !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -369,13 +367,13 @@
   <div class="print-control-panel">
     <div class="panel-header">
       <div class="panel-title">
-        <span>🖨️ ป้าย QR Code ติดหลัง Kanban Card (#1 - #10)</span>
-        <span class="a4-notice-badge">📄 การันตีลงพอดีกระดาษ A4 หน้าเดียว 100%</span>
+        <span>🖨️ ป้าย QR Code ติดหลัง Kanban Card (#1 - #20)</span>
+        <span class="a4-notice-badge">📄 การันตีลงพอดีกระดาษ A4 (2 แผ่น: หน้าละ 10 ใบ)</span>
       </div>
       <div style="display: flex; gap: 0.75rem; align-items: center;">
         <a href="index.html" class="btn-back">⬅️ กลับ Dashboard</a>
         <button class="btn-print" onclick="window.print()">
-          <span>🖨️ สั่งพิมพ์ลงกระดาษ A4 (1 Page)</span>
+          <span>🖨️ สั่งพิมพ์ลงกระดาษ A4 (2 Pages)</span>
         </button>
       </div>
     </div>
@@ -390,11 +388,11 @@
       </button>
     </div>
     <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.5rem;">
-      💡 <strong>คำแนะนำ:</strong> ป้ายทั้ง 10 ใบถูกจัดโครงสร้างแนวนอน (Side-by-Side) พอดีกับกระดาษ A4 แผ่นเดียว 100% ไม่หลุดไปหน้า 2 เมื่อพิมพ์
+      💡 <strong>คำแนะนำ:</strong> ป้ายทั้ง 20 ใบถูกจัดโครงสร้างแนวนอน (Side-by-Side) พอดีกับกระดาษ A4 จำนวน 2 แผ่น (แผ่นละ 10 ใบ) สะดวกต่อการตัดและเคลือบพลาสติกใช้งาน
     </div>
   </div>
 
-  <!-- PRINTABLE CARDS CONTAINER (10 CARDS) -->
+  <!-- PRINTABLE CARDS CONTAINER (20 CARDS) -->
   <div class="printable-cards-grid" id="cardsPrintContainer">
     <!-- Generated dynamically via JS -->
   </div>
@@ -440,7 +438,7 @@
       const container = document.getElementById('cardsPrintContainer');
       let html = '';
 
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 20; i++) {
         const fullCardUrl = targetBase.includes('?') 
           ? `${targetBase}&card=${i}`
           : `${targetBase}?card=${i}`;

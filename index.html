@@ -28,7 +28,7 @@
             <span>Cloud Sync Realtime (Online)</span>
           </div>
         </div>
-        <p>ระบบติดตามสถานะการประกอบ Z-Link แบบเรียลไทม์ (Kanban 10 Cards)</p>
+        <p>ระบบติดตามสถานะการประกอบ Z-Link แบบเรียลไทม์ (Kanban 20 Cards)</p>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
         <div class="kpi-icon fg">📦</div>
         <div class="kpi-info">
           <span class="kpi-label">FG Shelf Ready</span>
-          <span class="kpi-value" id="kpiFGCount">0 / 10</span>
+          <span class="kpi-value" id="kpiFGCount">0 / 20</span>
         </div>
       </div>
 
@@ -182,17 +182,17 @@
         </div>
       </section>
 
-      <!-- COLUMN 4: FG SHELF (10 SLOTS GRID) -->
+      <!-- COLUMN 4: FG SHELF (20 SLOTS GRID) -->
       <section class="kanban-column column-fg">
         <div class="column-header">
           <div class="column-title">
             <span>📦</span>
-            <span>FG Shelf (ชั้นวางสินค้า 10 ช่อง)</span>
+            <span>FG Shelf (ชั้นวางสินค้า 20 ช่อง)</span>
           </div>
-          <span class="column-badge" id="badgeFG">0/10</span>
+          <span class="column-badge" id="badgeFG">0/20</span>
         </div>
         <div class="cards-container" id="colFGShelf">
-          <!-- 10 Slots Grid injected dynamically -->
+          <!-- 20 Slots Grid injected dynamically -->
         </div>
       </section>
 
@@ -268,7 +268,7 @@
 
             <!-- DYNAMIC SUBFIELDS: MOVE CARD -->
             <div class="admin-form-group subfield-move" id="subfieldMoveCard">
-              <label for="adminSelectCardId">เลือก Card (#1 - #10)</label>
+              <label for="adminSelectCardId">เลือก Card (#1 - #20)</label>
               <select id="adminSelectCardId" class="admin-select">
                 <option value="1">Card #1</option>
                 <option value="2">Card #2</option>
@@ -280,6 +280,16 @@
                 <option value="8">Card #8</option>
                 <option value="9">Card #9</option>
                 <option value="10">Card #10</option>
+                <option value="11">Card #11</option>
+                <option value="12">Card #12</option>
+                <option value="13">Card #13</option>
+                <option value="14">Card #14</option>
+                <option value="15">Card #15</option>
+                <option value="16">Card #16</option>
+                <option value="17">Card #17</option>
+                <option value="18">Card #18</option>
+                <option value="19">Card #19</option>
+                <option value="20">Card #20</option>
               </select>
             </div>
 
@@ -462,8 +472,8 @@
 
   <!-- SUPABASE REALTIME SDK & SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/firebase-config.js?v=20261001_v1"></script>
-  <script src="js/app.js?v=20261001_v1"></script>
+  <script src="js/firebase-config.js?v=20261001_v2"></script>
+  <script src="js/app.js?v=20261001_v2"></script>
 </body>
 </html>
 

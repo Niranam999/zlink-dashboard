@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Parse card number from URL parameter ?card=X
   const urlParams = new URLSearchParams(window.location.search);
   const cardParam = urlParams.get('card');
-  if (cardParam && !isNaN(cardParam) && cardParam >= 1 && cardParam <= 10) {
+  if (cardParam && !isNaN(cardParam) && cardParam >= 1 && cardParam <= 20) {
     selectedCardId = parseInt(cardParam, 10);
   }
 
@@ -237,13 +237,13 @@ function selectCard(num) {
   renderMobileUI();
 }
 
-// Render Quick Card Selection Grid (Buttons 1 to 10)
+// Render Quick Card Selection Grid (Buttons 1 to 20)
 function renderQuickSelectorGrid() {
   const container = document.getElementById('cardButtonsGrid');
   if (!container) return;
 
   let html = '';
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 20; i++) {
     const isActive = (i === selectedCardId);
     html += `
       <button class="btn-card-num ${isActive ? 'active' : ''}" onclick="selectCard(${i})">

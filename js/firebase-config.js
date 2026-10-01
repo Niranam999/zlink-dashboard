@@ -25,7 +25,7 @@ const SUPABASE_CONFIG = {
   ENABLED: true
 };
 
-// Initial clean state for 10 Kanban Cards (#1 to #10) - All ready at JOB_BOARD
+// Initial clean state for 20 Kanban Cards (#1 to #20) - All ready at JOB_BOARD
 const DEFAULT_INITIAL_CARDS = {
   1: { id: 1, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   2: { id: 2, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
@@ -36,7 +36,17 @@ const DEFAULT_INITIAL_CARDS = {
   7: { id: 7, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   8: { id: 8, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
   9: { id: 9, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
-  10: { id: 10, status: 'JOB_BOARD', updated_at: new Date().toISOString() }
+  10: { id: 10, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  11: { id: 11, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  12: { id: 12, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  13: { id: 13, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  14: { id: 14, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  15: { id: 15, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  16: { id: 16, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  17: { id: 17, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  18: { id: 18, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  19: { id: 19, status: 'JOB_BOARD', updated_at: new Date().toISOString() },
+  20: { id: 20, status: 'JOB_BOARD', updated_at: new Date().toISOString() }
 };
 
 // Seed baseline cycle logs for standard time demonstration (Target: 12.0 Hours / Box)
@@ -110,16 +120,38 @@ class ZLinkStateEngine {
   }
 
   initStorage() {
-    const ZLINK_VERSION_KEY = 'zlink_data_version_aug2026_v8';
+    const ZLINK_VERSION_KEY = 'zlink_data_version_2026_fg20_v9';
     
     // Auto-migrate storage if version key is not present or outdated
-    if (localStorage.getItem(ZLINK_VERSION_KEY) !== 'v8') {
-      localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(DEFAULT_INITIAL_CARDS));
-      localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(DEFAULT_MONTHLY_HISTORY));
-      localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(DEFAULT_INITIAL_CYCLE_LOGS));
-      localStorage.setItem(ZLINK_MONTHLY_KEY, '0');
-      localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(DEFAULT_PROJECT_STATUS));
-      localStorage.setItem(ZLINK_VERSION_KEY, 'v8');
+    if (localStorage.getItem(ZLINK_VERSION_KEY) !== 'v9') {
+      let existingCards = {};
+      try {
+        const stored = localStorage.getItem(ZLINK_STORAGE_KEY);
+        if (stored) existingCards = JSON.parse(stored);
+      } catch (e) {}
+
+      // Preserve existing cards status if available and ensure 20 cards exist
+      const mergedCards = { ...DEFAULT_INITIAL_CARDS };
+      Object.keys(existingCards).forEach(id => {
+        if (mergedCards[id]) {
+          mergedCards[id] = existingCards[id];
+        }
+      });
+
+      localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(mergedCards));
+      if (!localStorage.getItem(ZLINK_MONTHLY_HIST_KEY)) {
+        localStorage.setItem(ZLINK_MONTHLY_HIST_KEY, JSON.stringify(DEFAULT_MONTHLY_HISTORY));
+      }
+      if (!localStorage.getItem(ZLINK_CYCLE_KEY)) {
+        localStorage.setItem(ZLINK_CYCLE_KEY, JSON.stringify(DEFAULT_INITIAL_CYCLE_LOGS));
+      }
+      if (!localStorage.getItem(ZLINK_MONTHLY_KEY)) {
+        localStorage.setItem(ZLINK_MONTHLY_KEY, '0');
+      }
+      if (!localStorage.getItem(ZLINK_STATUS_KEY)) {
+        localStorage.setItem(ZLINK_STATUS_KEY, JSON.stringify(DEFAULT_PROJECT_STATUS));
+      }
+      localStorage.setItem(ZLINK_VERSION_KEY, 'v9');
     }
 
     if (!localStorage.getItem(ZLINK_STORAGE_KEY)) {
@@ -190,11 +222,22 @@ class ZLinkStateEngine {
     localStorage.setItem(ZLINK_AUDIT_KEY, JSON.stringify(logs));
   }
 
-  // Get current state of all cards #1 to #10
+  // Get current state of all cards #1 to #20
   getCards() {
     try {
       const data = localStorage.getItem(ZLINK_STORAGE_KEY);
-      return data ? JSON.parse(data) : DEFAULT_INITIAL_CARDS;
+      let cards = data ? JSON.parse(data) : { ...DEFAULT_INITIAL_CARDS };
+      let changed = false;
+      for (let i = 1; i <= 20; i++) {
+        if (!cards[i]) {
+          cards[i] = { id: i, status: 'JOB_BOARD', updated_at: new Date().toISOString() };
+          changed = true;
+        }
+      }
+      if (changed) {
+        localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(cards));
+      }
+      return cards;
     } catch (e) {
       console.error('Error reading localStorage:', e);
       return DEFAULT_INITIAL_CARDS;
@@ -268,7 +311,7 @@ class ZLinkStateEngine {
   updateProjectStatus(status, detail) {
     const statusData = {
       status: status, // 'RUNNING', 'ISSUE', or 'NO_PRODUCTION'
-      detail: detail || (status === 'RUNNING' ? 'No issue' : status === 'NO_PRODUCTION' ? 'งาน FG ครบ 10 กล่องแล้ว' : 'พบปัญหา'),
+      detail: detail || (status === 'RUNNING' ? 'No issue' : status === 'NO_PRODUCTION' ? 'งาน FG ครบ 20 กล่องแล้ว' : 'พบปัญหา'),
       updated_at: new Date().toISOString()
     };
 
@@ -318,8 +361,8 @@ class ZLinkStateEngine {
 
     // Auto-check FG Shelf completion
     const fgCardsCount = Object.values(cards).filter(c => c.status === 'FG_SHELF').length;
-    if (fgCardsCount >= 10) {
-      this.updateProjectStatus('NO_PRODUCTION', 'งาน FG ครบ 10 กล่องแล้ว');
+    if (fgCardsCount >= 20) {
+      this.updateProjectStatus('NO_PRODUCTION', 'งาน FG ครบ 20 กล่องแล้ว');
     }
 
     // Record Audit Log
@@ -465,10 +508,10 @@ class ZLinkStateEngine {
       }, 800);
     }
 
-    // Auto-check if FG Shelf is 100% full (10 cards on FG Shelf) -> Auto set NO_PRODUCTION status
+    // Auto-check if FG Shelf is 100% full (20 cards on FG Shelf) -> Auto set NO_PRODUCTION status
     const fgCardsCount = Object.values(cards).filter(c => c.status === 'FG_SHELF').length;
-    if (fgCardsCount >= 10) {
-      this.updateProjectStatus('NO_PRODUCTION', 'งาน FG ครบ 10 กล่องแล้ว');
+    if (fgCardsCount >= 20) {
+      this.updateProjectStatus('NO_PRODUCTION', 'งาน FG ครบ 20 กล่องแล้ว');
     }
 
     // Broadcast change across browser windows & tabs
@@ -780,7 +823,13 @@ class ZLinkStateEngine {
       this.lastKnownTimestamp = remoteTimestamp;
 
       if (remoteData.cards) {
-        localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(remoteData.cards));
+        let cards = remoteData.cards;
+        for (let i = 1; i <= 20; i++) {
+          if (!cards[i]) {
+            cards[i] = { id: i, status: 'JOB_BOARD', updated_at: new Date().toISOString() };
+          }
+        }
+        localStorage.setItem(ZLINK_STORAGE_KEY, JSON.stringify(cards));
       }
       if (remoteData.monthlyShipped !== undefined) {
         localStorage.setItem(ZLINK_MONTHLY_KEY, remoteData.monthlyShipped.toString());
@@ -854,11 +903,11 @@ class ZLinkStateEngine {
     });
   }
 
-  // Reset entire board to clean state (ALL 10 Cards return to JOB_BOARD)
+  // Reset entire board to clean state (ALL 20 Cards return to JOB_BOARD)
   resetBoard() {
     const freshJobBoardCards = {};
     const nowIso = new Date().toISOString();
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 20; i++) {
       freshJobBoardCards[i] = {
         id: i,
         status: 'JOB_BOARD',

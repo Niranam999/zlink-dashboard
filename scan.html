@@ -54,11 +54,11 @@
       </div>
     </main>
 
-    <!-- QUICK CARD SELECTOR (NUMBERS 1 TO 10) -->
+    <!-- QUICK CARD SELECTOR (NUMBERS 1 TO 20) -->
     <section class="quick-card-selector">
-      <div class="selector-title">เลือกหมายเลขการ์ด (Card #1 - #10)</div>
+      <div class="selector-title">เลือกหมายเลขการ์ด (Card #1 - #20)</div>
       <div class="card-buttons-grid" id="cardButtonsGrid">
-        <!-- Buttons 1..10 injected dynamically -->
+        <!-- Buttons 1..20 injected dynamically -->
       </div>
     </section>
 
@@ -72,7 +72,7 @@
         <button class="btn-status-option btn-status-issue" id="btnStatusIssue" onclick="openIssueModal()">
           🔴 ISSUE (พบปัญหา)
         </button>
-        <button class="btn-status-option btn-status-noprod" id="btnStatusNoProd" onclick="setAssemblyStatus('NO_PRODUCTION', 'งาน FG ครบ 10 กล่องแล้ว')">
+        <button class="btn-status-option btn-status-noprod" id="btnStatusNoProd" onclick="setAssemblyStatus('NO_PRODUCTION', 'งาน FG ครบ 20 กล่องแล้ว')">
           🟢 NO PRODUCTION (หยุดผลิต)
         </button>
       </div>
@@ -81,7 +81,7 @@
     <!-- FOOTER NAV LINK -->
     <footer style="text-align: center; margin-top: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
       <a href="print-qr.html" target="_blank" style="color: #f472b6; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
-        🖨️ พิมพ์ป้าย QR Code ติดหลังการ์ด (Cards #1 - #10)
+        🖨️ พิมพ์ป้าย QR Code ติดหลังการ์ด (Cards #1 - #20)
       </a>
       <a href="index.html" style="color: #be185d; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
         🖥️ ดูหน้าจอ Full Dashboard (PC/TV)
@@ -154,7 +154,7 @@
 
   <!-- SUPABASE REALTIME SDK & SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/firebase-config.js?v=20261001_v1"></script>
-  <script src="js/scan.js?v=20261001_v1"></script>
+  <script src="js/firebase-config.js?v=20261001_v2"></script>
+  <script src="js/scan.js?v=20261001_v2"></script>
 </body>
 </html>

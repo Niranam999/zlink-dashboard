@@ -80,7 +80,7 @@ function renderDashboard() {
   const shippedCards = cardsList.filter(c => c.status === 'SHIPPED');
 
   // Update KPI Header Values
-  updateKPI('kpiFGCount', `${fgCards.length} / 10`);
+  updateKPI('kpiFGCount', `${fgCards.length} / 20`);
   updateKPI('kpiWIPCount', `${wipCards.length} / 10`);
   updateKPI('kpiShippedCount', `${monthlyShipped} กล่อง`);
   updateKPI('kpiYearlyShippedCount', `${yearlyTotalShipped} กล่อง`);
@@ -94,7 +94,7 @@ function renderDashboard() {
   updateBadge('badgeJobBoard', jobBoardCards.length);
   updateBadge('badgeWIP', `${wipCards.length}/10`);
   updateBadge('badgeQA', qaCards.length);
-  updateBadge('badgeFG', `${fgCards.length}/10`);
+  updateBadge('badgeFG', `${fgCards.length}/20`);
   updateBadge('badgeShipped', monthlyShipped);
 
   // Render Columns
@@ -331,7 +331,7 @@ function createCardHTML(card, isCompact = false) {
   `;
 }
 
-// Special 10-Slot Grid View Renderer for Column 4 (FG Shelf)
+// Special 20-Slot Grid View Renderer for Column 4 (FG Shelf)
 function renderFGShelfGrid(containerId, activeFGCards) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -339,7 +339,7 @@ function renderFGShelfGrid(containerId, activeFGCards) {
   const fgCardIds = new Set(activeFGCards.map(c => c.id));
   let gridHTML = '<div class="fg-shelf-grid">';
 
-  for (let slot = 1; slot <= 10; slot++) {
+  for (let slot = 1; slot <= 20; slot++) {
     const isOccupied = fgCardIds.has(slot);
     gridHTML += `
       <div class="fg-slot-cell ${isOccupied ? 'occupied' : ''}">
