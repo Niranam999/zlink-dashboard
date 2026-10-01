@@ -49,13 +49,13 @@ function renderMobileUI() {
       label: 'กำลังรันเครื่อง CNC (WIP CNC)',
       pillBg: 'rgba(56, 189, 248, 0.2)',
       pillColor: '#38bdf8',
-      btnText: '🔧 เลื่อนสถานะไป: ยกไปโต๊ะประกอบ (Assembly)',
+      btnText: '🔧 เลื่อนสถานะไป: ประกอบงาน (Assembly)',
       btnClass: 'btn-wip',
       nextStatus: 'WIP_ASSEMBLY',
-      nextLabel: 'Bench Assembly (โต๊ะประกอบ)'
+      nextLabel: 'ประกอบงาน (Assembly)'
     },
     WIP_ASSEMBLY: {
-      label: 'กำลังประกอบที่โต๊ะ (Bench Assembly)',
+      label: 'กำลังประกอบงาน (Assembly)',
       pillBg: 'rgba(14, 165, 233, 0.2)',
       pillColor: '#38bdf8',
       btnText: '🔍 เลื่อนสถานะไป: ส่งตรวจ QA / แพ็กงาน',
@@ -95,7 +95,7 @@ function renderMobileUI() {
   const statusLabelsMap = {
     JOB_BOARD: 'Job Board (รอเริ่มงาน)',
     WIP_CNC: 'WIP CNC (กำลังรัน CNC)',
-    WIP_ASSEMBLY: 'Bench Assembly (โต๊ะประกอบ)',
+    WIP_ASSEMBLY: 'ประกอบงาน (Assembly)',
     QA_PACKING: 'QA & Packing (ตรวจเช็ค QA)',
     FG_SHELF: `ชั้น FG Slot #${selectedCardId}`,
     SHIPPED: 'จัดส่งแล้ว (Shipped)'

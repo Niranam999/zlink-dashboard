@@ -127,7 +127,7 @@ function renderDashboard() {
   // Render Columns
   renderCardContainer('colJobBoard', jobBoardCards, 'No jobs pending');
   renderCardContainer('colWIP_CNC', wipCNCCards, 'ไม่มีงานรัน CNC');
-  renderCardContainer('colWIP_Assy', wipAssyCards, 'ไม่มีงานบนโต๊ะประกอบ');
+  renderCardContainer('colWIP_Assy', wipAssyCards, 'ไม่มีงานประกอบ');
   renderCardContainer('colQA', qaCards, 'No jobs in QA inspection');
   renderFGShelfGrid('colFGShelf', fgCards);
   renderShippedFeed('colShipped', shippedCards, monthlyShipped);
@@ -316,7 +316,7 @@ function createCardHTML(card, isCompact = false) {
   const statusLabels = {
     JOB_BOARD: 'รอเริ่มงาน',
     WIP_CNC: '⚙️ กำลังรัน CNC',
-    WIP_ASSEMBLY: '🔧 กำลังประกอบ (โต๊ะ)',
+    WIP_ASSEMBLY: '🔧 กำลังประกอบงาน (Assembly)',
     QA_PACKING: 'รอตรวจ QA / แพ็ก',
     FG_SHELF: 'พร้อมส่งบนชั้น FG',
     SHIPPED: 'จัดส่งเรียบร้อย'
