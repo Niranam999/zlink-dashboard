@@ -1237,29 +1237,147 @@ body.theme-sakura-pink footer a {
   display: block;
 }
 
-.operator-display {
+/* Operator Matrix Grid (CNC, Assembly, OJT, Total) */
+.operator-matrix-grid {
   display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  margin: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin: 0.15rem 0 0.1rem 0;
+  width: 100%;
 }
 
-.operator-number {
-  font-size: 2rem;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
+.op-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
 }
 
-.operator-unit {
-  font-size: 1rem;
+.op-stat-label {
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+
+.op-stat-val {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1;
+  font-family: var(--font-family);
+}
+
+.op-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.op-stat-divider-gold {
+  background: rgba(251, 191, 36, 0.35);
+}
+
+.op-stat-total .total-label {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+.op-stat-total .total-val {
+  color: #fbbf24;
+  font-size: 1.85rem;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
 }
 
 .info-card-subtext {
   font-size: 0.68rem;
   color: var(--text-dim);
+}
+
+/* WIP Process Dual Container (CNC & Assembly Sub-Boxes) */
+.wip-dual-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.wip-sub-box {
+  flex: 1;
+  min-height: 0;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  padding: 0.35rem 0.45rem;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.wip-box-cnc {
+  border-color: rgba(56, 189, 248, 0.32);
+}
+
+.wip-box-assy {
+  border-color: rgba(14, 165, 233, 0.32);
+}
+
+.wip-sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.wip-sub-title {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.wip-sub-badge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+.wip-sub-cards {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-right: 0.1rem;
+}
+
+.card-wip-cnc {
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.card-wip-assy {
+  border-color: rgba(14, 165, 233, 0.45);
 }
 
 .status-display {
@@ -1765,8 +1883,24 @@ body.theme-sakura-pink footer a {
   font-size: 1.15rem;
 }
 
-.tv-embedded .operator-number {
-  font-size: 3.2rem;
+.tv-embedded .op-stat-label {
+  font-size: 0.85rem;
+}
+
+.tv-embedded .op-stat-val {
+  font-size: 1.85rem;
+}
+
+.tv-embedded .op-stat-total .total-val {
+  font-size: 2.2rem;
+}
+
+.tv-embedded .wip-sub-title {
+  font-size: 0.88rem;
+}
+
+.tv-embedded .wip-sub-badge {
+  font-size: 0.78rem;
 }
 
 .tv-embedded .fg-shelf-grid {

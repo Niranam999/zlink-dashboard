@@ -63,6 +63,7 @@ function renderDashboard() {
   const yearlyTotalShipped = window.zlinkState.getYearlyTotalShipped(2026);
   const projStatus = window.zlinkState.getProjectStatus();
   const monthlyHist = window.zlinkState.getMonthlyHistory(2026);
+  const opCounts = window.zlinkState.getOperatorCounts ? window.zlinkState.getOperatorCounts() : { cnc: 2, assembly: 2, ojt: 2, total: 6 };
 
   // Compute a compact digest of the state to avoid redundant re-renders & flickering
   const stateDigest = JSON.stringify({
@@ -70,7 +71,8 @@ function renderDashboard() {
     monthlyShipped,
     yearlyTotalShipped,
     projStatus,
-    monthlyHist
+    monthlyHist,
+    opCounts
   });
 
   if (stateDigest === lastRenderedStateDigest) {
@@ -91,31 +93,41 @@ function renderDashboard() {
       }
       return a.id - b.id;
     });
-  const wipCards = cardsList.filter(c => c.status === 'WIP_ASSEMBLY');
+  const wipCNCCards = cardsList.filter(c => c.status === 'WIP_CNC');
+  const wipAssyCards = cardsList.filter(c => c.status === 'WIP_ASSEMBLY');
+  const totalWipCount = wipCNCCards.length + wipAssyCards.length;
   const qaCards = cardsList.filter(c => c.status === 'QA_PACKING');
   const fgCards = cardsList.filter(c => c.status === 'FG_SHELF');
   const shippedCards = cardsList.filter(c => c.status === 'SHIPPED');
 
   // Update KPI Header Values
   updateKPI('kpiFGCount', `${fgCards.length} / 20`);
-  updateKPI('kpiWIPCount', `${wipCards.length} / 10`);
+  updateKPI('kpiWIPCount', `${totalWipCount} / 10`);
   updateKPI('kpiShippedCount', `${monthlyShipped} กล่อง`);
   updateKPI('kpiYearlyShippedCount', `${yearlyTotalShipped} กล่อง`);
-  updateKPI('operatorCount', '2');
+  
+  // Update Operator Matrix (CNC, Assy, OJT, Total)
+  updateKPI('opCountCNC', opCounts.cnc);
+  updateKPI('opCountAssy', opCounts.assembly);
+  updateKPI('opCountOJT', opCounts.ojt);
+  updateKPI('opCountTotal', opCounts.total);
 
   // Update Assembly Project Status (RUNNING, ISSUE, NO_PRODUCTION)
   updateProjectStatusUI(projStatus);
 
   // Update Column Badges
   updateBadge('badgeJobBoard', jobBoardCards.length);
-  updateBadge('badgeWIP', `${wipCards.length}/10`);
+  updateBadge('badgeWIP', `${totalWipCount}/10`);
+  updateBadge('badgeWIP_CNC', wipCNCCards.length);
+  updateBadge('badgeWIP_Assy', wipAssyCards.length);
   updateBadge('badgeQA', qaCards.length);
   updateBadge('badgeFG', `${fgCards.length}/20`);
   updateBadge('badgeShipped', monthlyShipped);
 
   // Render Columns
   renderCardContainer('colJobBoard', jobBoardCards, 'No jobs pending');
-  renderCardContainer('colWIP', wipCards, 'No active WIP assembly');
+  renderCardContainer('colWIP_CNC', wipCNCCards, 'ไม่มีงานรัน CNC');
+  renderCardContainer('colWIP_Assy', wipAssyCards, 'ไม่มีงานบนโต๊ะประกอบ');
   renderCardContainer('colQA', qaCards, 'No jobs in QA inspection');
   renderFGShelfGrid('colFGShelf', fgCards);
   renderShippedFeed('colShipped', shippedCards, monthlyShipped);
@@ -294,15 +306,17 @@ function renderCardContainer(containerId, cards, emptyMessage) {
 function createCardHTML(card, isCompact = false) {
   const statusClasses = {
     JOB_BOARD: 'card-job-board',
-    WIP_ASSEMBLY: 'card-wip',
+    WIP_CNC: 'card-wip card-wip-cnc',
+    WIP_ASSEMBLY: 'card-wip card-wip-assy',
     QA_PACKING: 'card-qa',
     FG_SHELF: 'card-fg',
     SHIPPED: 'card-shipped'
   };
 
   const statusLabels = {
-    JOB_BOARD: 'รอประกอบ',
-    WIP_ASSEMBLY: 'กำลังประกอบ (WIP)',
+    JOB_BOARD: 'รอเริ่มงาน',
+    WIP_CNC: '⚙️ กำลังรัน CNC',
+    WIP_ASSEMBLY: '🔧 กำลังประกอบ (โต๊ะ)',
     QA_PACKING: 'รอตรวจ QA / แพ็ก',
     FG_SHELF: 'พร้อมส่งบนชั้น FG',
     SHIPPED: 'จัดส่งเรียบร้อย'

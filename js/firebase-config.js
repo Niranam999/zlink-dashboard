@@ -319,6 +319,27 @@ class ZLinkStateEngine {
     this.notify();
   }
 
+  // Get Operator Allocation Counts (CNC, Assembly, OJT, Total)
+  getOperatorCounts() {
+    try {
+      const data = localStorage.getItem('zlink_operator_counts');
+      if (data) return JSON.parse(data);
+    } catch (e) {}
+    return { cnc: 2, assembly: 2, ojt: 2, total: 6 };
+  }
+
+  // Update Operator Allocation Counts
+  setOperatorCounts(counts) {
+    const cnc = parseInt(counts.cnc || 0, 10);
+    const assembly = parseInt(counts.assembly || 0, 10);
+    const ojt = parseInt(counts.ojt || 0, 10);
+    const total = cnc + assembly + ojt;
+    const newCounts = { cnc, assembly, ojt, total };
+    localStorage.setItem('zlink_operator_counts', JSON.stringify(newCounts));
+    this.notify();
+    return newCounts;
+  }
+
   // Admin Method: Update Card Status manually with Audit Trail
   adminMoveCard(userName, pin, cardId, newStatus, reasonCode, remarks) {
     const auth = this.verifyUserPin(userName, pin);
@@ -477,11 +498,13 @@ class ZLinkStateEngine {
     const nowIso = new Date().toISOString();
 
     let wipStartTime = oldCard.wip_start_time || null;
-    if (newStatus === 'WIP_ASSEMBLY') {
-      wipStartTime = nowIso;
+    if (newStatus === 'WIP_CNC' || newStatus === 'WIP_ASSEMBLY') {
+      if (!wipStartTime) {
+        wipStartTime = nowIso;
+      }
     }
 
-    if (oldStatus === 'WIP_ASSEMBLY' && newStatus === 'QA_PACKING') {
+    if ((oldStatus === 'WIP_CNC' || oldStatus === 'WIP_ASSEMBLY') && newStatus === 'QA_PACKING') {
       this.recordAssemblyCycle(cardId, wipStartTime || oldCard.updated_at || nowIso, nowIso);
     }
 
@@ -651,6 +674,7 @@ class ZLinkStateEngine {
       yearlyTotalShipped: this.getYearlyTotalShipped(2026),
       monthlyHistory: this.getMonthlyHistory(2026),
       projectStatus: this.getProjectStatus(),
+      operatorCounts: this.getOperatorCounts(),
       auditLogs: this.getAuditLogs(),
       cycleLogs: this.getAssemblyCycleLogs(),
       timestamp: timestamp
@@ -851,6 +875,12 @@ class ZLinkStateEngine {
         const statusStr = JSON.stringify(remoteData.projectStatus);
         if (localStorage.getItem(ZLINK_STATUS_KEY) !== statusStr) {
           localStorage.setItem(ZLINK_STATUS_KEY, statusStr);
+        }
+      }
+      if (remoteData.operatorCounts) {
+        const opStr = JSON.stringify(remoteData.operatorCounts);
+        if (localStorage.getItem('zlink_operator_counts') !== opStr) {
+          localStorage.setItem('zlink_operator_counts', opStr);
         }
       }
       if (remoteData.auditLogs) {

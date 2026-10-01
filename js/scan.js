@@ -37,17 +37,26 @@ function renderMobileUI() {
   // Status configuration mapping
   const statusConfig = {
     JOB_BOARD: {
-      label: 'อยู่ Job Board (รอประกอบ)',
+      label: 'อยู่ Job Board (รอเริ่มงาน)',
       pillBg: 'rgba(148, 163, 184, 0.2)',
       pillColor: '#94a3b8',
-      btnText: '▶ เลื่อนสถานะไป: กำลังประกอบ (WIP)',
+      btnText: '⚙️ เลื่อนสถานะไป: รันเครื่อง CNC (WIP CNC)',
+      btnClass: 'btn-wip',
+      nextStatus: 'WIP_CNC',
+      nextLabel: 'WIP CNC (กำลังรัน CNC)'
+    },
+    WIP_CNC: {
+      label: 'กำลังรันเครื่อง CNC (WIP CNC)',
+      pillBg: 'rgba(56, 189, 248, 0.2)',
+      pillColor: '#38bdf8',
+      btnText: '🔧 เลื่อนสถานะไป: ยกไปโต๊ะประกอบ (Assembly)',
       btnClass: 'btn-wip',
       nextStatus: 'WIP_ASSEMBLY',
-      nextLabel: 'WIP Assembly (กำลังประกอบ)'
+      nextLabel: 'Bench Assembly (โต๊ะประกอบ)'
     },
     WIP_ASSEMBLY: {
-      label: 'กำลังประกอบ (WIP)',
-      pillBg: 'rgba(56, 189, 248, 0.2)',
+      label: 'กำลังประกอบที่โต๊ะ (Bench Assembly)',
+      pillBg: 'rgba(14, 165, 233, 0.2)',
       pillColor: '#38bdf8',
       btnText: '🔍 เลื่อนสถานะไป: ส่งตรวจ QA / แพ็กงาน',
       btnClass: 'btn-qa',
@@ -79,13 +88,14 @@ function renderMobileUI() {
       btnText: '🔄 กำลังรีเซ็ตกลับเข้า Job Board...',
       btnClass: 'btn-wip',
       nextStatus: 'JOB_BOARD',
-      nextLabel: 'Job Board (รอประกอบ)'
+      nextLabel: 'Job Board (รอเริ่มงาน)'
     }
   };
 
   const statusLabelsMap = {
-    JOB_BOARD: 'Job Board (รอประกอบ)',
-    WIP_ASSEMBLY: 'WIP Assembly (กำลังประกอบ)',
+    JOB_BOARD: 'Job Board (รอเริ่มงาน)',
+    WIP_CNC: 'WIP CNC (กำลังรัน CNC)',
+    WIP_ASSEMBLY: 'Bench Assembly (โต๊ะประกอบ)',
     QA_PACKING: 'QA & Packing (ตรวจเช็ค QA)',
     FG_SHELF: `ชั้น FG Slot #${selectedCardId}`,
     SHIPPED: 'จัดส่งแล้ว (Shipped)'
@@ -100,9 +110,9 @@ function renderMobileUI() {
   }
 
   if (actionContainer) {
-    // Check WIP limit rule: max 10 WIP cards concurrent
+    // Check WIP limit rule: max 10 WIP cards concurrent across CNC + Assembly
     const cardsObj = window.zlinkState.getCards();
-    const wipCount = Object.values(cardsObj).filter(c => c.status === 'WIP_ASSEMBLY').length;
+    const wipCount = Object.values(cardsObj).filter(c => c.status === 'WIP_CNC' || c.status === 'WIP_ASSEMBLY').length;
     const isWIPLimitReached = (cardData.status === 'JOB_BOARD' && wipCount >= 10);
 
     if (isWIPLimitReached) {

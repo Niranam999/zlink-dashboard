@@ -7,7 +7,7 @@
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Z-LINK Assembly Realtime Dashboard | Aveam</title>
-  <link rel="stylesheet" href="css/style.css?v=20261001_v6">
+  <link rel="stylesheet" href="css/style.css?v=20261001_v7">
   <script>
     if (window.self !== window.top || window.location.search.includes('tv=true')) {
       document.documentElement.classList.add('tv-embedded');
@@ -110,16 +110,33 @@
         </div>
       </div>
 
-      <!-- BOX 2: OPERATOR RUN TODAY -->
+      <!-- BOX 2: OPERATOR RUN TODAY (CNC, ASSEMBLY, OJT, TOTAL) -->
       <div class="info-card info-card-operator">
         <div class="info-card-header">
           <span class="info-card-title">Operator run today</span>
         </div>
-        <div class="operator-display">
-          <span class="operator-number" id="operatorCount">2</span>
-          <span class="operator-unit">Person</span>
+        <div class="operator-matrix-grid">
+          <div class="op-stat-item">
+            <span class="op-stat-label">CNC</span>
+            <span class="op-stat-val" id="opCountCNC">2</span>
+          </div>
+          <div class="op-stat-divider"></div>
+          <div class="op-stat-item">
+            <span class="op-stat-label">Assembly</span>
+            <span class="op-stat-val" id="opCountAssy">2</span>
+          </div>
+          <div class="op-stat-divider"></div>
+          <div class="op-stat-item">
+            <span class="op-stat-label">OJT</span>
+            <span class="op-stat-val" id="opCountOJT">2</span>
+          </div>
+          <div class="op-stat-divider op-stat-divider-gold"></div>
+          <div class="op-stat-item op-stat-total">
+            <span class="op-stat-label total-label">Total</span>
+            <span class="op-stat-val total-val" id="opCountTotal">6</span>
+          </div>
         </div>
-        <div class="info-card-subtext">(File 5: Sub-Lead + Member)</div>
+        <div class="info-card-subtext">(Group A: CNC + Group B: Assy + Group C: Trainee)</div>
       </div>
 
       <!-- BOX 3: PROJECT STATUS -->
@@ -154,17 +171,45 @@
         </div>
       </section>
 
-      <!-- COLUMN 2: WIP ASSEMBLY -->
+      <!-- COLUMN 2: WIP PROCESS (CNC & BENCH ASSEMBLY) -->
       <section class="kanban-column column-wip">
         <div class="column-header">
           <div class="column-title">
             <span>⚙️</span>
-            <span>WIP Assembly (กำลังประกอบ)</span>
+            <span>WIP (CNC & ประกอบ)</span>
           </div>
           <span class="column-badge" id="badgeWIP">0/10</span>
         </div>
-        <div class="cards-container" id="colWIP">
-          <!-- Cards injected dynamically -->
+        <div class="wip-dual-container" id="colWIP">
+          
+          <!-- SUB-BOX 1: CNC MACHINING -->
+          <div class="wip-sub-box wip-box-cnc">
+            <div class="wip-sub-header">
+              <div class="wip-sub-title">
+                <span>⚙️</span>
+                <span>1. รันเครื่อง CNC</span>
+              </div>
+              <span class="wip-sub-badge" id="badgeWIP_CNC">0</span>
+            </div>
+            <div class="wip-sub-cards" id="colWIP_CNC">
+              <!-- Injected dynamically by app.js -->
+            </div>
+          </div>
+
+          <!-- SUB-BOX 2: BENCH ASSEMBLY -->
+          <div class="wip-sub-box wip-box-assy">
+            <div class="wip-sub-header">
+              <div class="wip-sub-title">
+                <span>🔧</span>
+                <span>2. โต๊ะประกอบ (Assembly)</span>
+              </div>
+              <span class="wip-sub-badge" id="badgeWIP_Assy">0</span>
+            </div>
+            <div class="wip-sub-cards" id="colWIP_Assy">
+              <!-- Injected dynamically by app.js -->
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -296,8 +341,9 @@
             <div class="admin-form-group subfield-move" id="subfieldNewStatus">
               <label for="adminSelectNewStatus">เลือกสถานะใหม่ (New Status)</label>
               <select id="adminSelectNewStatus" class="admin-select">
-                <option value="JOB_BOARD">📋 JOB_BOARD (รอประกอบ)</option>
-                <option value="WIP_ASSEMBLY">⚙️ WIP_ASSEMBLY (กำลังประกอบ)</option>
+                <option value="JOB_BOARD">📋 JOB_BOARD (รอเริ่มงาน)</option>
+                <option value="WIP_CNC">⚙️ WIP_CNC (กำลังรัน CNC)</option>
+                <option value="WIP_ASSEMBLY">🔧 WIP_ASSEMBLY (โต๊ะประกอบ)</option>
                 <option value="QA_PACKING">🔍 QA_PACKING (รอตรวจ QA / แพ็ก)</option>
                 <option value="FG_SHELF">📦 FG_SHELF (พร้อมส่งบนชั้น FG)</option>
                 <option value="SHIPPED">🚚 SHIPPED (จัดส่งแล้ว)</option>
@@ -472,8 +518,8 @@
 
   <!-- SUPABASE REALTIME SDK & SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/firebase-config.js?v=20261001_v6"></script>
-  <script src="js/app.js?v=20261001_v6"></script>
+  <script src="js/firebase-config.js?v=20261001_v7"></script>
+  <script src="js/app.js?v=20261001_v7"></script>
 </body>
 </html>
 
