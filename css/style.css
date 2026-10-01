@@ -60,15 +60,22 @@
 }
 
 html, body {
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
+/* Default Desktop Dashboard Viewport Lock (Single Page) */
+html:not(.mobile-page):not(.print-page) {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+body:not(.mobile-body):not(.print-page):not(.theme-sakura-pink) {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background-color: var(--bg-dark);
   background-image: 
     radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
@@ -80,6 +87,33 @@ body {
   display: flex;
   flex-direction: column;
   line-height: 1.4;
+}
+
+/* Mobile Scanner & Print Pages - Scrollable */
+html.mobile-page,
+body.mobile-body,
+body.theme-sakura-pink {
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+html.mobile-page {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+html.print-page,
+body.print-page {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  display: block !important;
 }
 
 /* ==========================================================================
@@ -543,11 +577,12 @@ body {
 .mobile-app-wrapper {
   max-width: 480px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem;
+  padding: 1.25rem 1rem 3.5rem 1rem;
   min-height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .mobile-header {
