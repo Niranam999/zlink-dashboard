@@ -137,8 +137,8 @@ function renderShipmentChart() {
   const points = monthKeys.map((m, idx) => {
     const qty = monthlyData[m] || 0;
     const x = 18 + idx * 42.1818;
-    const y = 58 - (qty / scaleMax) * 48; // top margin 10, bottom margin 58
-    return { x, y: Math.max(10, Math.min(58, y)), qty, monthNum: m, label: monthLabels[idx] };
+    const y = 44 - (qty / scaleMax) * 34; // top margin 9, bottom baseline 44
+    return { x, y: Math.max(8, Math.min(44, y)), qty, monthNum: m, label: monthLabels[idx] };
   });
 
   // Filter active points up to current month (Jan - Aug) for trend line
@@ -152,7 +152,7 @@ function renderShipmentChart() {
   if (activePoints.length > 0) {
     const firstPt = activePoints[0];
     const lastPt = activePoints[activePoints.length - 1];
-    areaD = `${pathD} L ${lastPt.x.toFixed(1)} 58 L ${firstPt.x.toFixed(1)} 58 Z`;
+    areaD = `${pathD} L ${lastPt.x.toFixed(1)} 44 L ${firstPt.x.toFixed(1)} 44 Z`;
   }
 
   // Construct SVG Data Circles, Value Numbers & Month Labels INSIDE SVG for 100% exact alignment
@@ -167,18 +167,18 @@ function renderShipmentChart() {
     if (!isFuture) {
       const strokeColor = isCurrent ? '#fbbf24' : '#34d399';
       const fillColor = isCurrent ? '#fbbf24' : '#34d399';
-      const radius = isCurrent ? 5.5 : 4;
+      const radius = isCurrent ? 4.5 : 3.5;
 
       circlesHTML += `
-        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${radius}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${isCurrent ? 2.5 : 0}" />
-        ${isCurrent ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2,2" />` : ''}
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${radius}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${isCurrent ? 2 : 0}" />
+        ${isCurrent ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7.5" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="2,2" />` : ''}
       `;
 
       // Monthly Shipped Quantity Number Label above each point
       const valColor = isCurrent ? '#fbbf24' : '#e2e8f0';
-      const valY = Math.max(9, p.y - 7.5);
+      const valY = Math.max(7, p.y - 6);
       valueLabelsHTML += `
-        <text x="${p.x.toFixed(1)}" y="${valY.toFixed(1)}" text-anchor="middle" fill="${valColor}" font-size="11.5" font-weight="800" font-family="Outfit, Prompt, sans-serif" style="text-shadow: 0 1px 3px rgba(0,0,0,0.9);">${p.qty}</text>
+        <text x="${p.x.toFixed(1)}" y="${valY.toFixed(1)}" text-anchor="middle" fill="${valColor}" font-size="10.5" font-weight="800" font-family="Outfit, Prompt, sans-serif" style="text-shadow: 0 1px 3px rgba(0,0,0,0.9);">${p.qty}</text>
       `;
     }
 
@@ -186,23 +186,23 @@ function renderShipmentChart() {
     const fontWeight = isCurrent ? '800' : '600';
 
     labelsHTML += `
-      <text x="${p.x.toFixed(1)}" y="78" text-anchor="middle" fill="${textColor}" font-size="11.5" font-weight="${fontWeight}" font-family="Outfit, Prompt, sans-serif">${p.label}</text>
+      <text x="${p.x.toFixed(1)}" y="58" text-anchor="middle" fill="${textColor}" font-size="10" font-weight="${fontWeight}" font-family="Outfit, Prompt, sans-serif">${p.label}</text>
     `;
   });
 
   const svgHTML = `
-    <svg viewBox="0 0 500 85" preserveAspectRatio="none" class="shipment-svg-chart" style="width: 100%; height: 85px; overflow: visible;">
+    <svg viewBox="0 0 500 62" preserveAspectRatio="none" class="shipment-svg-chart" style="width: 100%; height: 56px; overflow: visible;">
       <defs>
         <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#34d399" stop-opacity="0.35" />
           <stop offset="100%" stop-color="#34d399" stop-opacity="0.0" />
         </linearGradient>
       </defs>
-      <line x1="0" y1="10" x2="500" y2="10" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
-      <line x1="0" y1="34" x2="500" y2="34" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
-      <line x1="0" y1="58" x2="500" y2="58" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
+      <line x1="0" y1="9" x2="500" y2="9" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
+      <line x1="0" y1="26" x2="500" y2="26" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
+      <line x1="0" y1="44" x2="500" y2="44" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
       ${areaD ? `<path d="${areaD}" fill="url(#trendGradient)" />` : ''}
-      ${pathD ? `<path d="${pathD}" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />` : ''}
+      ${pathD ? `<path d="${pathD}" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />` : ''}
       ${circlesHTML}
       ${valueLabelsHTML}
       ${labelsHTML}
@@ -221,7 +221,10 @@ function updateProjectStatusUI(projStatus) {
   if (!statusTextElem || !statusDetailElem) return;
 
   const status = projStatus ? projStatus.status : 'RUNNING';
-  const detail = projStatus ? projStatus.detail : 'No issue';
+  let detail = projStatus ? projStatus.detail : 'No issue';
+  if (detail && detail.includes('10')) {
+    detail = detail.replace(/10/g, '20');
+  }
 
   statusTextElem.textContent = status === 'NO_PRODUCTION' ? 'NO PRODUCTION' : status;
   statusDetailElem.textContent = detail;
@@ -343,10 +346,10 @@ function renderFGShelfGrid(containerId, activeFGCards) {
     const isOccupied = fgCardIds.has(slot);
     gridHTML += `
       <div class="fg-slot-cell ${isOccupied ? 'occupied' : ''}">
-        <div class="fg-slot-number">SLOT #${slot}</div>
+        <div class="fg-slot-number">#${slot}</div>
         <div class="fg-box-icon">${isOccupied ? '📦' : '⬜'}</div>
-        <div style="font-size: 0.7rem; font-weight: 700; color: ${isOccupied ? '#34d399' : '#64748b'}">
-          ${isOccupied ? `กล่อง CARD #${slot}` : 'ว่าง'}
+        <div style="font-size: 0.62rem; font-weight: 700; color: ${isOccupied ? '#34d399' : '#64748b'}; line-height: 1;">
+          ${isOccupied ? `CARD #${slot}` : 'ว่าง'}
         </div>
       </div>
     `;
@@ -362,17 +365,17 @@ function renderShippedFeed(containerId, shippedCards, monthlyTotal) {
   if (!container) return;
 
   let html = `
-    <div class="kanban-card card-shipped" style="background: rgba(167, 139, 250, 0.12); border-color: rgba(167, 139, 250, 0.4); text-align: center;">
-      <div style="font-size: 0.85rem; color: #a78bfa; font-weight: 700;">ยอดจัดส่งสะสมประจำเดือน</div>
-      <div style="font-size: 2.2rem; font-weight: 800; color: #ffffff; line-height: 1.2;">${monthlyTotal} <span style="font-size: 1rem;">กล่อง</span></div>
-      <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem;">(Monthly Cumulative Total)</div>
+    <div class="kanban-card card-shipped" style="background: rgba(167, 139, 250, 0.12); border-color: rgba(167, 139, 250, 0.4); text-align: center; padding: 0.4rem 0.5rem;">
+      <div style="font-size: 0.78rem; color: #a78bfa; font-weight: 700;">ยอดจัดส่งสะสมประจำเดือน</div>
+      <div style="font-size: 1.6rem; font-weight: 800; color: #ffffff; line-height: 1.1;">${monthlyTotal} <span style="font-size: 0.88rem;">กล่อง</span></div>
+      <div style="font-size: 0.68rem; color: #94a3b8; margin-top: 0.1rem;">(Monthly Cumulative Total)</div>
     </div>
   `;
 
   if (shippedCards.length > 0) {
     html += shippedCards.map(c => createCardHTML(c)).join('');
   } else {
-    html += `<div class="empty-column-msg" style="margin-top: 0.85rem;">รอรายการตัดจัดส่งจาก Shipping</div>`;
+    html += `<div class="empty-column-msg" style="margin-top: 0.5rem; padding: 0.8rem 0.5rem;">รอรายการตัดจัดส่งจาก Shipping</div>`;
   }
 
   container.innerHTML = html;
