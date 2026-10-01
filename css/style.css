@@ -400,6 +400,16 @@ body.print-page {
   margin: 0.12rem 0;
 }
 
+.card-compact-subinfo {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0.12rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .kanban-card.card-compact .card-time {
   font-size: 0.58rem;
   color: var(--text-dim);
@@ -1528,6 +1538,18 @@ body.theme-sakura-pink footer a {
   border-radius: 11px;
 }
 
+.wip-sub-cards.cards-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.3rem;
+  align-content: start;
+}
+
+.wip-sub-cards.cards-grid-2col .kanban-card.card-compact {
+  padding: 0.32rem 0.45rem;
+  border-radius: 8px;
+}
+
 .card-wip-cnc {
   border-color: rgba(56, 189, 248, 0.45);
 }
@@ -2261,6 +2283,29 @@ body:not(.theme-sakura-pink) .team-stepper-row-trainee .team-counter-input {
   font-size: 0.8rem;
   color: #e2e8f0;
   font-weight: 600;
+}
+
+.tv-embedded .card-compact-subinfo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.tv-embedded .wip-sub-cards .card-compact-bignum {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.tv-embedded .wip-sub-cards .card-compact-brand {
+  font-size: 0.8rem;
+}
+
+.tv-embedded .wip-sub-cards .kanban-card.card-compact {
+  padding: 0.3rem 0.45rem;
+}
+
+.tv-embedded .wip-sub-cards .kanban-card.card-compact .card-time {
+  font-size: 0.68rem;
 }
 
 .tv-embedded .info-card-title {

@@ -308,22 +308,25 @@ function renderCardContainer(containerId, cards, emptyMessage) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  const isWIPDualBox = (containerId === 'colWIP_CNC' || containerId === 'colWIP_Assy');
+
   if (cards.length === 0) {
-    container.className = 'cards-container';
+    container.className = isWIPDualBox ? 'wip-sub-cards' : 'cards-container';
     container.innerHTML = `<div class="empty-column-msg">${emptyMessage}</div>`;
     return;
   }
 
   const isJobBoard = (containerId === 'colJobBoard');
-  const isWIPMulti = (containerId === 'colWIP' && cards.length > 2);
+  // Two columns if Job Board or if WIP box has more than 4 cards
+  const isTwoColumn = isJobBoard || (isWIPDualBox && cards.length > 4);
 
-  if (isJobBoard || isWIPMulti) {
-    container.className = 'cards-container cards-grid-2col';
-    container.innerHTML = cards.map(card => createCardHTML(card, true)).join('');
+  if (isWIPDualBox) {
+    container.className = isTwoColumn ? 'wip-sub-cards cards-grid-2col' : 'wip-sub-cards';
   } else {
-    container.className = 'cards-container';
-    container.innerHTML = cards.map(card => createCardHTML(card, false)).join('');
+    container.className = isTwoColumn ? 'cards-container cards-grid-2col' : 'cards-container';
   }
+
+  container.innerHTML = cards.map(card => createCardHTML(card, isTwoColumn)).join('');
 }
 
 // Generate Kanban Card HTML
@@ -346,6 +349,8 @@ function createCardHTML(card, isCompact = false) {
     SHIPPED: 'จัดส่งเรียบร้อย'
   };
 
+  const isWIP = (card.status === 'WIP_CNC' || card.status === 'WIP_ASSEMBLY');
+
   const formattedTime = card.updated_at
     ? new Date(card.updated_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
     : '-';
@@ -360,9 +365,9 @@ function createCardHTML(card, isCompact = false) {
           </div>
           <div class="card-compact-bignum">#${card.id}</div>
         </div>
-        <div class="card-compact-status">${statusLabels[card.status] || card.status}</div>
+        ${!isWIP ? `<div class="card-compact-status">${statusLabels[card.status] || card.status}</div>` : `<div class="card-compact-subinfo">FG Slot #${card.id}</div>`}
         <div class="card-time">
-          <span>⏱️ อัปเดตล่าสุด: ${formattedTime} น.</span>
+          <span>⏱️ ${formattedTime} น.</span>
         </div>
       </div>
     `;
@@ -374,7 +379,7 @@ function createCardHTML(card, isCompact = false) {
         <div class="card-number-tag">
           <span>🎴 CARD #${card.id}</span>
         </div>
-        <span class="card-status-badge">${statusLabels[card.status] || card.status}</span>
+        ${!isWIP ? `<span class="card-status-badge">${statusLabels[card.status] || card.status}</span>` : ''}
       </div>
       <div class="card-body">
         <div class="card-info-row">
