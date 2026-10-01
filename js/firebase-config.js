@@ -20,7 +20,7 @@ const AUTHENTICATED_USERS = {
 const SUPABASE_CONFIG = {
   URL: 'https://xymnimzxhrhocjwkjrvn.supabase.co',
   KEY: 'sb_publishable_XC7zlechEDrIxF0wXWdqAg_-xIX6Oh3',
-  PROJECT_ID: 'COHU-Z-LINK REV.D-',
+  PROJECT_ID: 'ZLINK-KANBAN-STATE',
   POLL_INTERVAL_MS: 1200, // High-speed cloud sync every 1.2s
   ENABLED: true
 };
